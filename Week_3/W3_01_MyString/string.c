@@ -93,6 +93,19 @@ int memcmp(const void *s1, const void *s2, size_t n){
 //////////////////////////////////////////////////////////////////////////////////
 
 void *memcpy(void *dest, const void *src, size_t n){
+	// counter of bytes to copy
+	unsigned int i;
+
+	// for each byte
+	for( i = 0; i < n; ++i )
+		// copy src to dest
+		*(((char*)dest) + i) = *(((char*)src) + i);
+	return dest;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+void *memmove(void *dest, const void *src, size_t n){
 	// counter for n bytes
 	unsigned int i;
 
@@ -106,19 +119,6 @@ void *memcpy(void *dest, const void *src, size_t n){
 	
 	for(i = 0; i < n; ++i)
 		*(((char*)dest)+i)=*(((char*)src)+i);
-	return dest;
-}
-
-//////////////////////////////////////////////////////////////////////////////////
-
-void *memmove(void *dest, const void *src, size_t n){
-	// counter of bytes to copy
-	unsigned int i;
-
-	// for each byte
-	for( i = 0; i < n; ++i )
-		// copy src to dest
-		*(((char*)dest) + i) = *(((char*)src) + i);
 	return dest;
 }
 
