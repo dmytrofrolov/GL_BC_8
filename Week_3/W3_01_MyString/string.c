@@ -72,6 +72,9 @@ void *memchr(const void *ptr, char value, size_t num){
 //////////////////////////////////////////////////////////////////////////////////
 
 int memcmp(const void *s1, const void *s2, size_t n){
+	if( n == 0 )
+		return 0;
+
 	// counter for bytes
 	unsigned int i;
 
@@ -113,18 +116,21 @@ void *memmove(void *dest, const void *src, size_t n){
 	unsigned int diff = dest - src;
 	char signOfDiff = (diff < 0)?-1:1;
 	// if the src and dest overlap - not to copy
-	if( diff * signOfDiff < n ){
-		return NULL;
+	if( diff * signOfDiff > n ){
+		return memcpy(dest, src, n);
 	}
 	
-	for(i = 0; i < n; ++i)
-		*(((char*)dest)+i)=*(((char*)src)+i);
+	for(; n != 0; --n)
+		*(((char*)dest) + n ) = *(((char*)src) + n );
 	return dest;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 void *memset(void *dest, int z, size_t size){
+	if( size == 0 )
+		return dest;
+
 	// start of dest
 	void *newDest = dest;
 	
@@ -168,6 +174,9 @@ char *strcat(char *dest, const char *src){
 //////////////////////////////////////////////////////////////////////////////////
 
 char *strncat(char *dest, const char *src, size_t size){
+	if( size == 0 )
+		return dest;
+
 	// sizes of dest and src
 	size_t srcSize = strlen(src);
 	size_t destSize = strlen(dest);
@@ -263,6 +272,9 @@ int strcmp(const char *s1, const char *s2){
 //////////////////////////////////////////////////////////////////////////////////
 
 int strncmp(const char * s1, const char * s2, size_t size){
+	if( size == 0 )
+		return 0;
+
 	// while some symbols to compare
 	while( ( *s1 != TERM_SYMBOL ) && ( *s2 != TERM_SYMBOL ) && ( size != 0 ) ){
 
@@ -312,6 +324,10 @@ char *strcpy(char *dest, const char *src){
 //////////////////////////////////////////////////////////////////////////////////
 
 char *strncpy(char *dest, const char *src, size_t size){
+	// if nothing to copy exit from file
+	if( size == 0 )
+		return destBegin;
+
 	// begin of the dest
 	char * destBegin = dest;
 
@@ -431,14 +447,14 @@ char *strpbrk(const char *str1, const char *str2){
 	char * tempChar;
 
 	// while some symbols in str1
-	while( *str1 != TERM_SYMBOL){
+	while( *str1 != TERM_SYMBOL ){
 		// find for current str1 char in str2
-		tempChar = strchr(str2, *str1);
+		tempChar = strchr( str2, *str1 );
 
 		// if found char in str2
 		if( tempChar!=NULL ){
 			// return pointer to place where char in str1 found
-			return (char*)(str1);
+			return (char*)( str1 );
 		}
 
 		// move to next char
@@ -511,7 +527,7 @@ char *strtok(char *str, const char *delimiters){
 		tempToken = strSt;
 
 		// now string points to part of the itself were delimiter found
-		strSt = strpbrk(strSt, delimiters);
+		strSt = strpbrk( strSt, delimiters );
 
 		// if it is not the same place (if first char not delim)
 		if( tempToken != strSt ){
