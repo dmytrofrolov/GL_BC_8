@@ -10,7 +10,13 @@
 
 #include "string.h"
 
+#define EQUAL 0
+#define GREATER 1
+#define LESS -1
+
 const unsigned char TERM_SYMBOL = '~';
+
+
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -81,16 +87,16 @@ int memcmp(const void *s1, const void *s2, size_t n){
 	// for all n bytes
 	for( i = 0; i < n; ++i ){
 		if( *(char*)s1 > *(char*)s2 ){
-			return 1;
+			return GREATER;
 		}else{ 
 			if( *(char*)s1 < *(char*)s2 ){
-				return -1;
+				return LESS;
 			}
 		}
 		++s1;
 		++s2;
 	}
-	return 0;
+	return EQUAL;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +120,7 @@ void *memmove(void *dest, const void *src, size_t n){
 
 	// difference between dest and src in memory
 	unsigned int diff = dest - src;
-	char signOfDiff = (diff < 0)?-1:1;
+	char signOfDiff = ( diff < 0 ) ? -1 : 1;
 	// if the src and dest overlap - not to copy
 	if( diff * signOfDiff > n ){
 		return memcpy(dest, src, n);
@@ -140,7 +146,7 @@ void *memset(void *dest, int z, size_t size){
 	// if destination string size less than we want to fill
 	// remember it in lessThanSize variable
 	if(strlen(dest) <= size){
-		lessThanSize=1;
+		lessThanSize = 1;
 	}
 
 	// while some bytes to set
@@ -239,11 +245,11 @@ int strcmp(const char *s1, const char *s2){
 	// while some symbols to compare
 	while( ( *s1 != TERM_SYMBOL ) && ( *s2 != TERM_SYMBOL ) ){
 		if( *s1 > *s2 ){
-			return 1;
+			return GREATER;
 		}
 		else {
 			if( *s1 < *s2 ){
-				return -1;
+				return LESS;
 			}
 		}
 
@@ -254,17 +260,17 @@ int strcmp(const char *s1, const char *s2){
 	// if strings both ends - thay are equal
 	if( ( *s1 == TERM_SYMBOL ) && ( *s2 == TERM_SYMBOL ) ){
 		// 0 - thay are equal
-		return 0;
+		return EQUAL;
 	}
 	// if thay are not equal
 	else {
 		// if second ends
 		if( *s2 == TERM_SYMBOL ){
-			return 1;
+			return GREATER;
 		}
 		// if first ends
 		else {
-			return -1;
+			return LESS;
 		}
 	}
 }
@@ -273,17 +279,17 @@ int strcmp(const char *s1, const char *s2){
 
 int strncmp(const char * s1, const char * s2, size_t size){
 	if( size == 0 )
-		return 0;
+		return EQUAL;
 
 	// while some symbols to compare
 	while( ( *s1 != TERM_SYMBOL ) && ( *s2 != TERM_SYMBOL ) && ( size != 0 ) ){
 
 		if( *s1 > *s2 ){
-			return 1;
+			return GREATER;
 		}
 		else {
 			if( *s1 < *s2 ){
-				return -1;
+				return LESS;
 			}
 		}
 		// move to next character
@@ -294,18 +300,18 @@ int strncmp(const char * s1, const char * s2, size_t size){
 		--size;
 	}
 	// if there are not any chars to compare or the end of the both strings
-	if( size==0 || ( *s1 == TERM_SYMBOL && *s2 == TERM_SYMBOL ) ){
-		return 0;
+	if( size == 0 || ( *s1 == TERM_SYMBOL && *s2 == TERM_SYMBOL ) ){
+		return EQUAL;
 	}
 	// if it is the end of s1 or s2
 	else{ 
 		// if it is the end of s2
 		if( *s2 == TERM_SYMBOL ){
-			return 1;
+			return GREATER;
 		} 
 		// if it is the end of s1
 		else {
-			return -1;
+			return LESS;
 		}
 	}
 }
