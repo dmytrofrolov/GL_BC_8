@@ -29,6 +29,11 @@ const unsigned int SERVICE_PART = 4;
 extern const unsigned int MB = 1024 * 1024 ;
 extern const unsigned int KB = 1024 ;
 
+const unsigned int blockSizes[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
+const unsigned int blockStart[] = {0, 1, 2, 4, 8,  18, 38, 70,  90,  92,  96,   98,   99};
+
+const unsigned int MAX_SIZE = 4 * KB;
+
 int initHeap( size_t size ){
 	
 	ph_start = malloc( size );
@@ -52,6 +57,13 @@ int closeHeap( void ){
 }
 
 void * myMalloc( size_t size ){
+	int x = floor( log(size) / log(2) ) - 1;
+	for (int i = 0; i < x; ++i)
+	{
+		cout << " e == " << exp(- pow(  int(i - (1<< (int)(x/3) ) ) , 2 ) / (2.5f) ) << endl;
+	}
+	
+
 	// current adress of the service block of memory
 	const char * curAdr = (const char *) v_service;
 
@@ -61,7 +73,7 @@ void * myMalloc( size_t size ){
 	const char * currentBlockStart;
 
 	// counter for bits in byte
-	unsigned int i = 0;
+	unsigned int i;
 
 	// counter for current search
 	unsigned int j;
@@ -79,8 +91,7 @@ void * myMalloc( size_t size ){
 		currentBlock = curAdr;
 		currentBlockStart = curAdr;
 		// for each 2 bits in byte
-		for ( i = 0; i < 8; i += 2 )
-		{
+		for ( i = 0; i < 8; i += 2 ){
 			// remember bit were we start
 			j = i;
 
@@ -89,7 +100,6 @@ void * myMalloc( size_t size ){
 
 			// check if next "size" bytes is free
 			do{
-				//cout << "j = " << j << endl;
 
 				// is free bit mask - check 0, 2st, 4th, 6th bit in order to j
 				isFreeMask = ( 1 << j );
@@ -115,8 +125,7 @@ void * myMalloc( size_t size ){
 			}
 			while(--tempSize);
 			
-
-			if(currentBlock >= (char*)v_heap - size)
+			if(currentBlock >= v_heap + size)
 				return NULL;
 
 			// if the block found ( it started at "currentBlock" ) it marks the
@@ -128,8 +137,9 @@ void * myMalloc( size_t size ){
 				tempSize = size;
 				// mark all bits that needed to remember that block is used
 				do{
-					// mask to mark the block and the next is used
-					isFreeMask = ( 3 << j ); 
+					// mask to mark the block
+					isFreeMask = (3 << j ); 
+
 					// mark it
 					*(char*)currentBlock |= isFreeMask;
 
@@ -145,14 +155,13 @@ void * myMalloc( size_t size ){
 						j = 0;
 					}
 					else{
-						j += 2;
+						j+=2;
 					}
 
 					// if program has checked previous byte move to next one
 					// only if it is not last size
 					if( j == 0 ){
 						++currentBlock;
-
 					}
 				}
 				while(--tempSize);

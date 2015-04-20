@@ -28,8 +28,15 @@ int main(){
 	}
 
 	int *ptr1, *ptr2, *ptr3, *ptr4;
+	// for version 2
+
+
+
+
 	/*
 	ptr1 = (int*) myMalloc(10);
+	// for version 1
+	*/
 	cout << "ptr1 " << ptr1 << endl;
 	printHeap();
 	
@@ -58,7 +65,7 @@ int main(){
 	ptr2 = (int*) myMalloc(20);
 	cout <<  "ptr2 " << ptr2 << endl;
 	printHeap();
-	*/
+
 
 	cout << endl;
 
@@ -78,7 +85,6 @@ int main(){
 	}
 
 	cout << std::dec << sum/totalCalc << endl;
-
 
 	// stop work here
 	closeHeap();
