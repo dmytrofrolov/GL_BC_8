@@ -20,8 +20,9 @@ using std::cout;
 using std::endl;
 
 int main(){
+
 	int initResult;
-	initResult = initHeap( 16 * KB );
+	initResult = initHeap( 2 * KB );
 	if( initResult != SUCCESS ){
 		cout << "ERROR! Heap cannot be initialized!\nError code:" << initResult << endl;
 		return HEAP_INIT_ERR;
@@ -34,34 +35,35 @@ int main(){
 
 
 	/*
-	ptr1 = (int*) myMalloc(10);
 	// for version 1
+
+	ptr1 = (int*) myMalloc(128);
+	cout << "ptr1 " << ptr1 << endl;
+	printHeap();
+
+	ptr1 = (int*) myMalloc(128);
+	cout << "ptr1 " << ptr1 << endl;
+	printHeap();
 	*/
+	ptr1 = (int*) myMalloc(34);
 	cout << "ptr1 " << ptr1 << endl;
 	printHeap();
 	
-
-	ptr2 = (int*) myMalloc(2);
+	
+	
+	ptr2 = (int*) myMalloc(60);
 	cout << "ptr2 "<< ptr2 << endl;
 	printHeap();
 	
-	ptr3 = (int*) myMalloc(2);
-	cout << "ptr3 " << ptr3 << endl;
-	printHeap();
 	
 	myFree(ptr1);
 	cout << "free ptr1" << endl;
-	printHeap();
-	
-
-	ptr4 = (int*) myMalloc(20);
-	cout << "ptr4 " << ptr4 << endl;
 	printHeap();
 
 	myFree(ptr2);
 	cout << "free ptr2 " << endl;
 	printHeap();
-
+	/*
 	ptr2 = (int*) myMalloc(20);
 	cout <<  "ptr2 " << ptr2 << endl;
 	printHeap();
@@ -85,6 +87,7 @@ int main(){
 	}
 
 	cout << std::dec << sum/totalCalc << endl;
+	*/	
 
 	// stop work here
 	closeHeap();

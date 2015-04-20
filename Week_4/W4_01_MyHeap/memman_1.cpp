@@ -180,18 +180,18 @@ int myFree( void * address){
 	const char * startAdd = (char*)v_service;
 	startAdd += startFrom / 4;
 	int j = startFrom % 4;
-	j*=2;
+	j *= 2;
 	//cout << "startAdd " << (void*)startAdd << endl;
 	//cout << "j " << j << endl;
 	int next = 0;
 	while( 1 ){
-		for(;j<8;j+=2){
+		for(; j<8; j += 2 ){
 			// mask to mark the block
-			isFreeMask = pow(2, j ); 
+			isFreeMask = (1 << j) + (1 << (j+1)); 
 			// mask to mark that next block is used too
-			isFreeMask += pow(2, j + 1);
+			//isFreeMask += pow(2, j + 1);
 
-			next = *(unsigned char*)startAdd & (2 << (j + 1) );
+			next = *(unsigned char*)startAdd & (1 << (j + 1) );
 			*(char*)startAdd &= ~isFreeMask;
 			//cout << std::dec << j << " " << next << endl;
 			if( next == 0 )break;

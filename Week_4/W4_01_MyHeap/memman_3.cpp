@@ -28,23 +28,113 @@ static int heapSize;
 const unsigned int SERVICE_PART = 4;
 extern const unsigned int MB = 1024 * 1024 ;
 extern const unsigned int KB = 1024 ;
-
-const unsigned int blockSizes[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
-const unsigned int blockStart[] = {0, 1, 2, 4, 8,  18, 38, 70,  90,  92,  96,   98,   99};
-
 const unsigned int MAX_SIZE = 4 * KB;
 
+
+//const unsigned int blockSizes[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
+unsigned int blockStart[100] = {0};
+float tempStart[100] = {0};
+unsigned int largestSize;
+
+
+
+
 int initHeap( size_t size ){
+
+	const size_t HeapSize = size;
+
+	int x = floor( log(size) / log(2) ) - 1;
+	if(x < 1)x = 1;
+	float sum = 0, percentSum = 0;
+	float tempX;
+	int i;
+	for ( i = 0; i < x; ++i)
+	{
+
+		tempX = exp(- pow(  int(i - ((int)1<< (int)(x/5) ) ) , 2 ) / (5.8f) );
+		tempStart[i] = tempX;
+		sum += tempX;
+
+	}
 	
-	ph_start = malloc( size );
+	for ( i = 0; i < x; ++i)
+	{
+		tempStart[i] /= sum;
+		tempStart[i] *= 100;
+		tempStart[i] = (int)(tempStart[i]);
+		percentSum+=tempStart[i];
+	}
+
+	for( i = 0; i < x && percentSum!=100; i++){
+		++tempStart[i];
+		++percentSum;
+	}
+
+	sum = 0;
+
+	for( i = 0; i < x && tempStart[i]!=0; i++){
+		sum+=((int)1<<i) * tempStart[i];
+	}
+
+	
+
+	for ( i = 0; i < x; ++i)
+	{
+		tempStart[i] = round(tempStart[i] * size/sum);
+	}
+
+
+	sum = 0;
+	for( i = 0; i < x && tempStart[i]!=0; i++){
+		sum+=((int)1<<i) * tempStart[i];
+	}
+
+	if( size-sum < 0 ){
+		sum-=((int)1<<(i-1) ) * tempStart[i-1];
+		--tempStart[i-1];
+
+	}
+	//cout << __LINE__ << endl;
+	//cout << size-sum << endl;
+	//if(size-sum==0)tempStart[0] += 1;
+	while(size-sum > 0){
+		for( i = 0; i < x && tempStart[i]!=0; i++){
+			if(size-sum>= ((int)1<<i) )
+				{
+					++tempStart[i];
+					size-=((int)1<<i);
+				}
+		}
+	}
+	
+	
+
+	sum = 0;
+	for( i = 0; i < x && tempStart[i]!=0; i++){
+		sum+=((int)1<<i) * tempStart[i];
+	}
+	largestSize = (int)1<<(i-1);
+	blockStart[0] = 0;
+	for( i = 0; i < x && tempStart[i]!=0; i++){	
+		if(i>0)
+			blockStart[i] = blockStart[i-1]+tempStart[i-1] * ((int)1<<(i-1) );
+		cout << ((int)1<<i) << " == " << blockStart[i] << endl;
+	}
+	cout << sum << endl;
+	cout << largestSize << endl;
+	
+
+	/// allocation start
+
+	ph_start = malloc( HeapSize );
 	//cout << ph_start << endl;
 	if( ph_start != NULL ){
 		v_service = ph_start;
-		v_heap = (char*)ph_start + size / SERVICE_PART + 1;
+		v_heap = (char*)ph_start + HeapSize / SERVICE_PART + 1;
 		cout << "v_service:\t" << v_service << endl;
 		cout << "v_heap:\t\t" << v_heap << endl;
 		
-		heapSize = size;
+		heapSize = HeapSize;
 		return SUCCESS;
 	}
 	else{
@@ -57,16 +147,17 @@ int closeHeap( void ){
 }
 
 void * myMalloc( size_t size ){
-	int x = floor( log(size) / log(2) ) - 1;
-	for (int i = 0; i < x; ++i)
-	{
-		cout << " e == " << exp(- pow(  int(i - (1<< (int)(x/3) ) ) , 2 ) / (2.5f) ) << endl;
-	}
+	short first = 1;
+	if( size > largestSize ) return NULL;
+	int x = floor( log(size) / log(2) );
+	if(1<<x < size)++x;
+	// cout << "__in malloc \nx == " << x << endl;
+
+	// start malloc
 	
-
 	// current adress of the service block of memory
-	const char * curAdr = (const char *) v_service;
-
+	const char * curAdr = (const char *) v_service + (int)(blockStart[x]/4);
+	// cout << hex << (void*)curAdr << endl;
 	// start block of memory programm allocates if it is free
 	const char * currentBlock;
 
@@ -92,6 +183,11 @@ void * myMalloc( size_t size ){
 		currentBlockStart = curAdr;
 		// for each 2 bits in byte
 		for ( i = 0; i < 8; i += 2 ){
+			if(first){
+				i = (int)( blockStart[x] )%4;
+				first=0;
+			}
+
 			// remember bit were we start
 			j = i;
 
@@ -125,7 +221,7 @@ void * myMalloc( size_t size ){
 			}
 			while(--tempSize);
 			
-			if(currentBlock >= v_heap + size)
+			if(currentBlock >= (char*)v_heap + size)
 				return NULL;
 
 			// if the block found ( it started at "currentBlock" ) it marks the
@@ -166,7 +262,7 @@ void * myMalloc( size_t size ){
 				}
 				while(--tempSize);
 
-				return (char*)v_heap + (currentBlockStart - (const char *) v_service) * SERVICE_PART + i;
+				return (char*)v_heap + (currentBlockStart - (const char *) v_service) * SERVICE_PART + i / 2;
 			} // end if free block founded
 			
 		} // for each 2-bit in byte end
@@ -183,24 +279,23 @@ int myFree( void * address){
 	// bit mask to check if this byte is free
 	unsigned short isFreeMask = 0;
 	unsigned int startFrom = ( (char*)address - (char*)v_heap );
-	//cout << "address " << address << endl;
-	//cout << "v_heap " << v_heap << endl;
+	// cout << "address " << address << endl;
+	// cout << "v_heap " << v_heap << endl;
 	
 	const char * startAdd = (char*)v_service;
 	startAdd += startFrom / 4;
-	int j = startFrom % 4;
-	j*=2;
-	//cout << "startAdd " << (void*)startAdd << endl;
-	//cout << "j " << j << endl;
+	unsigned int j = (startFrom % 4 ) * 2;
+
+	cout << "startAdd " << (void*)startAdd << endl;
+	cout << "j " << j << endl;
 	int next = 0;
 	while( 1 ){
-		for(;j<8;j+=2){
+		for(; j < 8; j += 2 ){
 			// mask to mark the block
-			isFreeMask = pow(2, j ); 
+			isFreeMask = (1 << j) + (1 << (j+1)); 
 			// mask to mark that next block is used too
-			isFreeMask += pow(2, j + 1);
 
-			next = *(unsigned char*)startAdd & (2 << (j + 1) );
+			next = *(unsigned char*)startAdd & (1 << (j + 1) );
 			*(char*)startAdd &= ~isFreeMask;
 			//cout << std::dec << j << " " << next << endl;
 			if( next == 0 )break;
@@ -221,13 +316,13 @@ void printHeap( void ){
 	int heapLeft = heapSize;
 	const unsigned char * startOfTheService = (unsigned char*)v_service;
 	//unsigned char * addr;
-	cout << "_printHeap_" << endl;
-	while( (startOfTheService <= v_heap)  && (heapLeft >= 0) ){
-		cout << (void*)((char*)startOfTheService) << " : ";
-		for (int i = 0; (i < 16) && (heapLeft >= 0) ; ++i)
+	cout << "_printHeap_" << endl << setfill('0');
+	while( (startOfTheService <= v_heap)  && (heapLeft > 0) ){
+		cout << setw(4) << std::dec << heapSize - heapLeft << " " << (void*)((char*)startOfTheService) << " : ";
+		for (int i = 0; (i < 16) && (heapLeft > 0) ; ++i)
 		{
 			//addr = ++startOfTheService;
-			cout << hex << setw(2) << setfill('0') << (int)*startOfTheService << " ";
+			cout << hex << setw(2) << (int)*startOfTheService << " ";
 			++startOfTheService;
 			heapLeft-=4;
 		}
