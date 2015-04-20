@@ -332,7 +332,7 @@ char *strcpy(char *dest, const char *src){
 char *strncpy(char *dest, const char *src, size_t size){
 	// if nothing to copy exit from file
 	if( size == 0 )
-		return destBegin;
+		return dest;
 
 	// begin of the dest
 	char * destBegin = dest;

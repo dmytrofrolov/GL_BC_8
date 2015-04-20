@@ -7,6 +7,10 @@ uint64_t rdtsc();
 
 
 void main(void){
+
+	int a =0, b = 0;
+	++a, ++b;
+
 	char * p  		= (char*) allocateString ("HwithmmaHello23320");
 	char * string2 	= (char*) allocateString ("mamma miall what is that0");
 	
