@@ -1,7 +1,11 @@
-/*
+/**
 *
+* @file		memman_2.cpp
+* @brief	source file with implementation of myheap functions
+* @version	0.2
 *
-*
+* @author	Dmytro Frolov
+* @date		Apr, 2015
 *
 */
 

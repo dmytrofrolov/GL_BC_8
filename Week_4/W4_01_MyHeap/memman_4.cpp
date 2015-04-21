@@ -1,7 +1,11 @@
-/*
+/**
 *
+* @file		memman_4.cpp
+* @brief	source file with implementation of myheap functions
+* @version	0.4
 *
-*
+* @author	Dmytro Frolov
+* @date		Apr, 2015
 *
 */
 
@@ -12,8 +16,6 @@
 #include <cstring> // for memmove
 #include "memman.h"
 
-#define FREE 0
-#define OCCUP 1
 
 using std::cout;
 using std::endl;
@@ -28,94 +30,173 @@ static void * ph_start = NULL;
 static void * v_service = NULL;
 static void * v_heap = NULL;
 
-unsigned int myHeapSize;
-unsigned int blockNums;    // # of 14328 blocks
+unsigned int g_heapSize;
+
 
 extern const unsigned int MB = 1024 * 1024 ;
 extern const unsigned int KB = 1024 ;
-extern const unsigned int BLOCK_SIZE = 14328;
 
+static const unsigned int SERV_PART = 3;
 
-struct FreeBlock{
+// it will interpret service-part as sequence of Block structures
+struct Block
+{
 	char *start;
-	char *next; 
+//	char *next; 
 	size_t len:31;
 	char state:1;	// 1 - free, 0 - occupied
 };
 
-int initHeap( size_t size ){
-	cout << sizeof(FreeBlock) << endl;
-	
-	ph_start = malloc( size * BLOCK_SIZE );
-	
-	if(ph_start==NULL) return HEAP_INIT_ERR;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+int initHeap( const size_t size )
+{
+	
+	// var for initial marking service-part
+	Block * serviceBlock;
+
+	// try to allocate in global heap
+	ph_start = malloc( size + size / SERV_PART + SERV_PART );
+	
+	// if it is not allocated
+	if( ph_start == NULL ) 
+	{
+		return HEAP_INIT_ERR;
+	}
+
+	// start of service-part
 	v_service = ph_start;
-	v_heap = (char*)ph_start + size / 3;
 
-	((FreeBlock*)v_service)-> start = (char*)v_heap;
-	((FreeBlock*)v_service)-> len 	= size;
-	((FreeBlock*)v_service)-> state	= FREE;
-	((FreeBlock*)v_service)-> next 	= NULL;
-	myHeapSize = size * BLOCK_SIZE;
+	// start of user-part
+	v_heap = (char*)ph_start + size / SERV_PART + SERV_PART;
+
+	// write to service block
+	serviceBlock = ((Block*)v_service);
+
+	// initial states
+	serviceBlock-> start = (char*)v_heap;
+	serviceBlock-> len 	 = size;
+	serviceBlock-> state = FREE; 
 	
-	blockNums = size;
+	// remember the size of the heap
+	g_heapSize = size;
 	
 	return SUCCESS;
 }
 
-int closeHeap( void ){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int closeHeap( void )
+{
 	free( ph_start );
+	return SUCCESS;
 }
 
-void * myMalloc( size_t size ){
-	FreeBlock * servStart = ((FreeBlock*)v_service);
- 	cout <<  servStart->len << endl;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void * myMalloc( const size_t size )
+{
+	Block * currentBlock = ((Block*)v_service);
+ 	//cout <<  currentBlock->len << endl;
 	do{
-		while( servStart->state != FREE ){
-			++servStart;
+		// move to first free block
+		while( (currentBlock->state != FREE) && (currentBlock < v_heap) )
+		{
+			++currentBlock;
 		}
-		if( servStart->len >= size ){
-			if( (servStart+1)->start != NULL ){
-				memmove(servStart+2, servStart+1, (char*)v_heap-(char*)servStart+1);
+		// if there are no bytes to allocate
+		if(currentBlock >= v_heap)
+		{
+			return NULL;
+		}
+
+		// if found just size enought block
+		if( currentBlock->len == size )
+		{
+			currentBlock->state = OCCUP;
+			return currentBlock->start;
+		}
+
+		// if found bigger size block
+		if( currentBlock->len > size )
+		{
+			// if next if not free
+			if( (currentBlock+1)->start != NULL )
+			{
+				// move service-block
+				memmove(currentBlock + 2, currentBlock + 1, (char*)v_heap - (char*)currentBlock + 1);
 			}
-			++servStart;
-			servStart->start = (servStart-1)->start + size;
-			servStart->len = (servStart-1)->len - size;
-			servStart->state = FREE;
-			--servStart;
-			servStart->state = OCCUP;
-			servStart->len = size;
-			return servStart->start;
+
+			// update info in next one (the free bytes left)
+			(currentBlock+1)->start = (currentBlock)->start + size;
+			(currentBlock+1)->len = (currentBlock)->len - size;
+			(currentBlock+1)->state = FREE;
+
+			// update this one
+			currentBlock->state = OCCUP;
+			currentBlock->len = size;
+			return currentBlock->start;
 		}
-		++servStart;
+
+		// move to next block
+		++currentBlock;
 	}while( 1 );
+
 	return NULL;
 }
 
-int myFree( void * address){
-	FreeBlock * servStart = ((FreeBlock*)v_service);
-	cout << (void*)servStart->start << endl;
-	while( (servStart->start != address) && (servStart->start < (char*)v_heap+myHeapSize) ){
-		++servStart;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int myFree( void * address)
+{
+	Block * currentBlock = ((Block*)v_service);
+	//cout << (void*)currentBlock->start << endl;
+	while( (currentBlock->start != address) && (currentBlock->start < (char*)v_heap+g_heapSize) ){
+		++currentBlock;
 	}
 
-	if( servStart->start >= (char*)v_heap+myHeapSize )
+	if( currentBlock->start >= (char*)v_heap+g_heapSize )
 		return 1;
 	
-	servStart->state = FREE;
+	currentBlock->state = FREE;
+	if( currentBlock != v_service && (currentBlock-1)->state == FREE )
+	{
+		//(currentBlock-1)->start = currentBlock->start;
+		(currentBlock-1)->len = (currentBlock-1)->len + currentBlock->len;
+
+		memmove(currentBlock, currentBlock+1, g_heapSize - abs((char*)currentBlock + 1 - (char*)v_heap ) );
+		
+		if( currentBlock->state == FREE )
+		{
+			(currentBlock-1)->len = (currentBlock-1)->len + currentBlock->len;
+			memmove(currentBlock, currentBlock+1, g_heapSize - abs((char*)currentBlock +1 - (char*)v_heap ) );
+		}
+	}
 	return 0;
 }
 
-void printHeap( void ){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	FreeBlock * servStart = ((FreeBlock*)v_service);
+void printHeap( void )
+{
+
+	Block * currentBlock = ((Block*)v_service);
 
 	cout << "_printHeap_" << endl << setfill('0');
-	while( (servStart < v_heap) ){
-		if( servStart->start !=NULL )
-		cout << (void*)servStart->start << " " << servStart->len << "\t" << (int)servStart->state << endl;
-		++servStart;
+	while( (currentBlock < v_heap) )
+	{
+		if( currentBlock->start !=NULL )
+		{
+			cout << (void*)currentBlock->start 
+				 << " " << currentBlock->len 
+				 << "\t"<< ((int)currentBlock->state == 0?"FREE":"1") 
+				 << endl;
+		}
+		++currentBlock;
 	}
 	cout << endl;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// eof memman_4.cpp

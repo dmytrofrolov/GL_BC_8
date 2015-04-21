@@ -1,7 +1,11 @@
-/*
+/**
 *
+* @file		memman_1.cpp
+* @brief	source file with implementation of myheap functions
+* @version	0.1
 *
-*
+* @author	Dmytro Frolov
+* @date		Apr, 2015
 *
 */
 
@@ -20,51 +24,90 @@ using std::setfill;
 // starting of the heap in physical memory
 static void * ph_start = NULL;
 
-// virtual address
+// address for service-part of the heap and user-part
 static void * v_service = NULL;
 static void * v_heap = NULL;
 
-static int heapSize;
+static int g_heapSize;
+
+// service-part is 4 times less than user-part
 const unsigned int SERVICE_PART = 4;
+
+// bytes in MB and KB
 extern const unsigned int MB = 1024 * 1024 ;
 extern const unsigned int KB = 1024 ;
 
-int initHeap( size_t size ){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int initHeap( const size_t size )
+{
+	// try to allocate the memory in global heap
+	// size - for user part, size / SERVICE_PART + SERVICE_PART - for service part
+	ph_start = malloc( size + size / SERVICE_PART + SERVICE_PART );
 	
-	ph_start = malloc( size );
-	//cout << ph_start << endl;
-	if( ph_start != NULL ){
+	// if allocation successfull
+	if( ph_start != NULL )
+	{
+		// service-part starts at the start of the global heat what was allocated
 		v_service = ph_start;
-		v_heap = (char*)ph_start + size / SERVICE_PART + 1;
-		cout << "v_service:\t" << v_service << endl;
-		cout << "v_heap:\t\t" << v_heap << endl;
+
+		// user-part starts after service-part
+		v_heap = (char*)ph_start + size / SERVICE_PART + SERVICE_PART;
 		
-		heapSize = size;
+		#ifdef DEBUG_INFO
+			cout << "v_service:\t" << v_service << endl;
+			cout << "v_heap:\t\t" << v_heap << endl;
+		#endif
+
+		// remember the size what we allocated in gloval var
+		g_heapSize = size;
+
+		// allocation was successfull, return success
 		return SUCCESS;
 	}
-	else{
+	// allocation was not successfull =(
+	else
+	{
 		return HEAP_INIT_ERR;
 	}
 }
 
-int closeHeap( void ){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int closeHeap( void )
+{
 	free( ph_start );
+	return SUCCESS;
 }
 
-void * myMalloc( size_t size ){
-	// current adress of the service block of memory
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void * myMalloc( const size_t size )
+{
+
+	// if user want to allocate 0 or more than available
+	if( size == 0 || size >= g_heapSize )
+	{
+		return NULL;
+	}
+
+	// address in memory what was allocated
+	void * returnAddress;
+
+	// current adress of the service-part of memory
 	const char * curAdr = (const char *) v_service;
 
-	// start block of memory programm allocates if it is free
+	// start block of memory program allocates if it is free
 	const char * currentBlock;
 
+	// remember were was started
 	const char * currentBlockStart;
 
 	// counter for bits in byte
-	unsigned int i = 0;
+	unsigned int startedBit;
 
 	// counter for current search
-	unsigned int j;
+	unsigned int currentBit;
 
 	// bit mask to check if this byte is free
 	unsigned short isFreeMask = 0;
@@ -73,91 +116,107 @@ void * myMalloc( size_t size ){
 	size_t tempSize;
 
 	// for each byte in service block
-	for(; curAdr < v_heap ; ++curAdr){
+	for(; curAdr < v_heap ; ++curAdr)
+	{
 
 		// remember were we start
 		currentBlock = curAdr;
 		currentBlockStart = curAdr;
 		// for each 2 bits in byte
-		for ( i = 0; i < 8; i += 2 )
+		for ( startedBit = 0; startedBit < BITS_IN_BYTE; startedBit += BITS_IN_SERV )
 		{
 			// remember bit were we start
-			j = i;
+			currentBit = startedBit;
 
 			// remember size what is needed
 			tempSize = size;
 
 			// check if next "size" bytes is free
 			do{
-				//cout << "j = " << j << endl;
 
 				// is free bit mask - check 0, 2st, 4th, 6th bit in order to j
-				isFreeMask = ( 1 << j );
+				isFreeMask = ( 1 << currentBit );
 				
 				// if it is not free
-				if( *curAdr & isFreeMask ){
+				if( *curAdr & isFreeMask )
+				{
 						break;
 				}
 
 				// next var for next bit
+				currentBit += BITS_IN_SERV;
 				// if we are on 3rd 2-bit next will be zero
-				if( j == 6 ){
-					j = 0;
-				}
-				else{
-					j += 2;
+				if( currentBit == BITS_IN_BYTE )
+				{
+					currentBit = 0;
 				}
 
+
 				// if program has checked previous byte move to next one
-				if(j==0){
+				if( currentBit == 0 )
+				{
 					++curAdr;
 				}
 			}
 			while(--tempSize);
 			
-
+			// if we found block ouside the user-part
 			if(currentBlock >= (char*)v_heap - size)
+			{
 				return NULL;
+			}
 
 			// if the block found ( it started at "currentBlock" ) it marks the
 			// part of the service that it will be allocated
-			if(tempSize == 0){
+			if(tempSize == 0)
+			{
 				// remember the 2-bit to mark it
-				int j = i;
+				currentBit = startedBit;
 				// remember size
 				tempSize = size;
 				// mark all bits that needed to remember that block is used
 				do{
 					// mask to mark the block and the next is used
-					isFreeMask = ( 3 << j ); 
+					isFreeMask = ( 3 << currentBit ); 
 					// mark it
 					*(char*)currentBlock |= isFreeMask;
 
 					// if it was the last byte unmark that next if used
-					if( tempSize == 1 ) {
-						isFreeMask = (1 << (j + 1) );
+					if( tempSize == 1 )
+					{
+						isFreeMask = (1 << (currentBit + 1) );
 						*(char*)currentBlock ^= isFreeMask;
 					}
 
 					// next var for next bit
+					currentBit += BITS_IN_SERV;
 					// if we are on 3rd 2-bit next will be zero
-					if( j == 6 ){
-						j = 0;
-					}
-					else{
-						j += 2;
+					if( currentBit == BITS_IN_BYTE )
+					{
+						currentBit = 0;
 					}
 
 					// if program has checked previous byte move to next one
 					// only if it is not last size
-					if( j == 0 ){
+					if( currentBit == 0 )
+					{
 						++currentBlock;
-
 					}
 				}
 				while(--tempSize);
 
-				return (char*)v_heap + (currentBlockStart - (const char *) v_service) * SERVICE_PART + i;
+				// return address in user-part of the heap
+				returnAddress = (char*)v_heap;
+
+				// it is shifted in order were currentBlockStart shifted in service part
+				// don't forget that there are 4 times difference between user- and service- part (SERVICE_PART)
+				returnAddress = (char*)returnAddress + (currentBlockStart - (const char *) v_service) * SERVICE_PART;
+
+				// it is also shifted in order to what bit we started to count in service part
+				returnAddress = (char*)returnAddress + startedBit / BITS_IN_SERV;
+				
+				return   returnAddress;
+			
 			} // end if free block founded
 			
 		} // for each 2-bit in byte end
@@ -168,62 +227,104 @@ void * myMalloc( size_t size ){
 	return NULL;
 }
 
-int myFree( void * address){
-	if(address==NULL) return 1;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int myFree( void * address)
+{
+	// if user dont know what he do
+	if( address==NULL || ( ( address > ((char*)v_heap+g_heapSize) ) && ( address < v_heap ) ) ) 
+	{
+		return 1;
+	}
 
 	// bit mask to check if this byte is free
-	unsigned short isFreeMask = 0;
+	unsigned short isFreeMask;
 	unsigned int startFrom = ( (char*)address - (char*)v_heap );
-	//cout << "address " << address << endl;
-	//cout << "v_heap " << v_heap << endl;
 	
-	const char * startAdd = (char*)v_service;
-	startAdd += startFrom / 4;
-	int j = startFrom % 4;
-	j *= 2;
-	//cout << "startAdd " << (void*)startAdd << endl;
-	//cout << "j " << j << endl;
-	int next = 0;
-	while( 1 ){
-		for(; j<8; j += 2 ){
-			// mask to mark the block
-			isFreeMask = (1 << j) + (1 << (j+1)); 
-			// mask to mark that next block is used too
-			//isFreeMask += pow(2, j + 1);
+	// is next byte is allocated
+	int next;
+	
+	const char * currentByte = (char*)v_service;
+	currentByte += startFrom / (BITS_IN_BYTE / BITS_IN_SERV);
+	int currentBit = startFrom % (BITS_IN_BYTE / BITS_IN_SERV);
 
-			next = *(unsigned char*)startAdd & (1 << (j + 1) );
-			*(char*)startAdd &= ~isFreeMask;
-			//cout << std::dec << j << " " << next << endl;
-			if( next == 0 )break;
-			// mark it
-			*(char*)startAdd &= ~isFreeMask;
+	currentBit *= BITS_IN_SERV;
+	
+	while( 1 )
+	{
+		for(; currentBit < BITS_IN_BYTE; currentBit += BITS_IN_SERV )
+		{
+			// mask to mark the block
+			isFreeMask = (3 << currentBit); 
+			// mask to mark that next block is used too
+
+			next = *(unsigned char*)currentByte & (1 << (currentBit + 1) );
+			*(char*)currentByte &= ~isFreeMask;
+
+			// if next was not allocated with this block
+			if( next == 0 )
+			{
+				return SUCCESS;
+			}
 
 		}
-		j = 0;
-		++startAdd;
-		if(next == 0)break;
+
+		currentBit = 0;
+		++currentByte;
+
 	}
 	
 	return 0;
 }
 
-void printHeap( void ){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void printHeap( void )
+{
+	
+	unsigned int sizeToPrint = 0;
+	char* endOfHeap = (char*)v_service + g_heapSize / 4;
+	while(*endOfHeap == 0 && endOfHeap > v_service )
+	{
+		++sizeToPrint; 
+		--endOfHeap;
+	} 
+	sizeToPrint = g_heapSize/4 - sizeToPrint + 2;
+	//cout << "g_heapSize = " << std::dec << g_heapSize << endl;
+	cout << "sizeToPrint = " << std::dec <<  sizeToPrint << endl;
+
+
+	// counter for 16 bytes in row
 	int i = 0;
-	int heapLeft = heapSize;
+
+	// how many bytes in heap to print
+	int heapLeft = g_heapSize;
+
+	// start of the service part
 	const unsigned char * startOfTheService = (unsigned char*)v_service;
-	//unsigned char * addr;
+	
 	cout << "_printHeap_" << endl;
-	while( (startOfTheService <= v_heap)  && (heapLeft >= 0) ){
+	
+	// while it is in user part and some bytes to print
+	while( ( startOfTheService <= v_heap )  && ( sizeToPrint > 0 ) )
+	{
+		// this row for address :
 		cout << (void*)((char*)startOfTheService) << " : ";
-		for (int i = 0; (i < 16) && (heapLeft >= 0) ; ++i)
+
+		// print 16 bytes in row
+		for ( i = 0; ( i < 16 ) && ( sizeToPrint > 0 ) ; ++i)
 		{
-			//addr = ++startOfTheService;
 			cout << hex << setw(2) << setfill('0') << (int)*startOfTheService << " ";
 			++startOfTheService;
 			heapLeft-=4;
+			--sizeToPrint;
 		}
+		
 		cout << endl;
-		//startOfTheService+=16;
 	}
 	cout << endl;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// eof memman_1.cpp

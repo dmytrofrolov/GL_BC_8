@@ -1,9 +1,12 @@
 LFLAGS = -lstdc++
+VERSION = 4
 
-all: myheap01
+all: myheap
 
-myheap01: main.o memman_4.o
-	gcc $(LFLAGS) main.o memman_4.o -o myheap01
+.PHONY: myheap
+
+myheap: main.o memman_$(VERSION).o
+	gcc $(LFLAGS) main.o memman_$(VERSION).o -o myheap
 
 main.o: main.cpp
 	gcc $(LFLAGS) -c main.cpp

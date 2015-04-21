@@ -1,7 +1,10 @@
-/*
+/**
 *
-*
-*
+* @file		main.cpp
+* @brief	file for testing myheap
+* 
+* @author	Dmytro Frolov
+* @date		Apr, 2015
 *
 */
 
@@ -28,6 +31,8 @@ int main(){
 		return HEAP_INIT_ERR;
 	}
 
+	printHeap();
+
 	int *ptr1, *ptr2, *ptr3, *ptr4;
 	// for version 2
 
@@ -46,13 +51,11 @@ int main(){
 	printHeap();
 	*/
 	ptr1 = (int*) myMalloc(34);
-	cout << "ptr1 " << ptr1 << endl;
+	cout << "allocate 34 bytes\nptr1 " << ptr1 << endl;
 	printHeap();
 	
-
-	
 	ptr2 = (int*) myMalloc(60);
-	cout << "ptr2 "<< ptr2 << endl;
+	cout << "allocate 60 bytes\nptr2 "<< ptr2 << endl;
 	printHeap();
 
 	
@@ -60,23 +63,23 @@ int main(){
 	cout << "free ptr1" << endl;
 	printHeap();
 
-	ptr1 = (int*) myMalloc(2);
-	cout << "ptr1 " << ptr1 << endl;
+	ptr1 = (int*) myMalloc(4);
+	cout << "allocate 4 bytes\nptr1 " << ptr1 << endl;
 	printHeap();
 	
 	ptr3 = (int*) myMalloc(2);
-	cout << "ptr3 " << ptr3 << endl;
+	cout << "allocate 2 bytes\nptr3 " << ptr3 << endl;
 	printHeap();	
-		/*	
+
 	myFree(ptr2);
 	cout << "free ptr2 " << endl;
 	printHeap();
 
-	ptr2 = (int*) myMalloc(20);
-	cout <<  "ptr2 " << ptr2 << endl;
+	ptr2 = (int*) myMalloc(1004);
+	cout <<  "allocate 1004 bytes\nptr2 " << ptr2 << endl;
 	printHeap();
 
-
+		/*	*/
 	cout << endl;
 
 	unsigned int i, totalCalc = 1000;
@@ -84,18 +87,18 @@ int main(){
 	
 	for(i = 0; i < totalCalc; i++){
 		uint64_t i1 = rdtsc();
-		//ptr4 = (int*) malloc(100);
+		ptr4 = (int*) malloc( 1 * KB );
 		//ptr4 = new int;
-		ptr4 = (int*)myMalloc( 100 );
+		//ptr4 = (int*)myMalloc( 1 * KB );
 		uint64_t i2 = rdtsc();
-		//free(ptr4);
+		free(ptr4);
 		//delete ptr4;
-		myFree(ptr4);
+		//myFree(ptr4);
 		sum += i2 - i1;
 	}
 
 	cout << std::dec << sum/totalCalc << endl;
-	*/	
+//	*/	
 
 	// stop work here
 	closeHeap();
