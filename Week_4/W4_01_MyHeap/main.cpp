@@ -49,21 +49,29 @@ int main(){
 	cout << "ptr1 " << ptr1 << endl;
 	printHeap();
 	
-	
+
 	
 	ptr2 = (int*) myMalloc(60);
 	cout << "ptr2 "<< ptr2 << endl;
 	printHeap();
-	
+
 	
 	myFree(ptr1);
 	cout << "free ptr1" << endl;
 	printHeap();
 
+	ptr1 = (int*) myMalloc(2);
+	cout << "ptr1 " << ptr1 << endl;
+	printHeap();
+	
+	ptr3 = (int*) myMalloc(2);
+	cout << "ptr3 " << ptr3 << endl;
+	printHeap();	
+		/*	
 	myFree(ptr2);
 	cout << "free ptr2 " << endl;
 	printHeap();
-	/*
+
 	ptr2 = (int*) myMalloc(20);
 	cout <<  "ptr2 " << ptr2 << endl;
 	printHeap();

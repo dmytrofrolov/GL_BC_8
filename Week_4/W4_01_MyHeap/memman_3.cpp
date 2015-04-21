@@ -25,16 +25,20 @@ static void * v_service = NULL;
 static void * v_heap = NULL;
 
 static int heapSize;
-const unsigned int SERVICE_PART = 4;
+extern const unsigned int SERVICE_PART = 4;
 extern const unsigned int MB = 1024 * 1024 ;
 extern const unsigned int KB = 1024 ;
-const unsigned int MAX_SIZE = 4 * KB;
+// const unsigned int MAX_SIZE = 4 * KB;
 
 
-//const unsigned int blockSizes[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096};
-unsigned int blockStart[100] = {0};
-float tempStart[100] = {0};
-unsigned int largestSize;
+// starting of blocks in heap
+static unsigned int blockStart[100] = {0};
+
+// temp
+static float tempStart[100] = {0};
+
+// largest possible block that user can allocate
+static unsigned int largestSize;
 
 
 
@@ -43,21 +47,24 @@ int initHeap( size_t size ){
 
 	const size_t HeapSize = size;
 
-	int x = floor( log(size) / log(2) ) - 1;
-	if(x < 1)x = 1;
+	unsigned int powOf2 = floor( log(size) / log(2) ) - 1;
+	if(powOf2 < 1)powOf2 = 1;
 	float sum = 0, percentSum = 0;
 	float tempX;
 	int i;
-	for ( i = 0; i < x; ++i)
-	{
 
-		tempX = exp(- pow(  int(i - ((int)1<< (int)(x/5) ) ) , 2 ) / (5.8f) );
+	// gaussian 
+	for ( i = 0; i < powOf2; ++i)
+	{
+		// 
+		tempX = exp( - pow(  int(i - ((int) 1<< (int)( powOf2 / 5 ) ) ), 2 ) / ( 5.8f ) );
 		tempStart[i] = tempX;
 		sum += tempX;
 
 	}
 	
-	for ( i = 0; i < x; ++i)
+	//
+	for ( i = 0; i < powOf2; ++i)
 	{
 		tempStart[i] /= sum;
 		tempStart[i] *= 100;
@@ -65,27 +72,27 @@ int initHeap( size_t size ){
 		percentSum+=tempStart[i];
 	}
 
-	for( i = 0; i < x && percentSum!=100; i++){
+	for( i = 0; i <powOf2 && percentSum!=100; i++){
 		++tempStart[i];
 		++percentSum;
 	}
 
 	sum = 0;
 
-	for( i = 0; i < x && tempStart[i]!=0; i++){
+	for( i = 0; i <powOf2 && tempStart[i]!=0; i++){
 		sum+=((int)1<<i) * tempStart[i];
 	}
 
 	
 
-	for ( i = 0; i < x; ++i)
+	for ( i = 0; i <powOf2; ++i)
 	{
 		tempStart[i] = round(tempStart[i] * size/sum);
 	}
 
 
 	sum = 0;
-	for( i = 0; i < x && tempStart[i]!=0; i++){
+	for( i = 0; i <powOf2 && tempStart[i]!=0; i++){
 		sum+=((int)1<<i) * tempStart[i];
 	}
 
@@ -98,7 +105,7 @@ int initHeap( size_t size ){
 	//cout << size-sum << endl;
 	//if(size-sum==0)tempStart[0] += 1;
 	while(size-sum > 0){
-		for( i = 0; i < x && tempStart[i]!=0; i++){
+		for( i = 0; i <powOf2 && tempStart[i]!=0; i++){
 			if(size-sum>= ((int)1<<i) )
 				{
 					++tempStart[i];
@@ -110,12 +117,12 @@ int initHeap( size_t size ){
 	
 
 	sum = 0;
-	for( i = 0; i < x && tempStart[i]!=0; i++){
+	for( i = 0; i <powOf2 && tempStart[i]!=0; i++){
 		sum+=((int)1<<i) * tempStart[i];
 	}
 	largestSize = (int)1<<(i-1);
 	blockStart[0] = 0;
-	for( i = 0; i < x && tempStart[i]!=0; i++){	
+	for( i = 0; i <powOf2 && tempStart[i]!=0; i++){	
 		if(i>0)
 			blockStart[i] = blockStart[i-1]+tempStart[i-1] * ((int)1<<(i-1) );
 		cout << ((int)1<<i) << " == " << blockStart[i] << endl;
@@ -149,14 +156,15 @@ int closeHeap( void ){
 void * myMalloc( size_t size ){
 	short first = 1;
 	if( size > largestSize ) return NULL;
-	int x = floor( log(size) / log(2) );
-	if(1<<x < size)++x;
-	// cout << "__in malloc \nx == " << x << endl;
+	int powOf2 = floor( log(size) / log(2) );
+	if( (1 << powOf2) < size)
+		++powOf2;
+	// cout << "__in malloc \npowOf2 == " << powOf2 << endl;
 
 	// start malloc
 	
 	// current adress of the service block of memory
-	const char * curAdr = (const char *) v_service + (int)(blockStart[x]/4);
+	const char * curAdr = (const char *) v_service + (int)(blockStart[ powOf2 ] / 4);
 	// cout << hex << (void*)curAdr << endl;
 	// start block of memory programm allocates if it is free
 	const char * currentBlock;
@@ -184,7 +192,7 @@ void * myMalloc( size_t size ){
 		// for each 2 bits in byte
 		for ( i = 0; i < 8; i += 2 ){
 			if(first){
-				i = (int)( blockStart[x] )%4;
+				i = (int)( blockStart[ powOf2 ] ) % 4;
 				first=0;
 			}
 
@@ -251,7 +259,7 @@ void * myMalloc( size_t size ){
 						j = 0;
 					}
 					else{
-						j+=2;
+						j += 2;
 					}
 
 					// if program has checked previous byte move to next one
