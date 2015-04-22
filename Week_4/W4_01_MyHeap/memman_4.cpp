@@ -70,6 +70,10 @@ int initHeap( const size_t size )
 	// start of user-part
 	v_heap = (char*)ph_start + size / SERV_PART + SERV_PART;
 
+    // write zeros to service-part
+    for(char*p = (char*)v_service; p < v_heap; ++p)
+        *p=0;
+
 	// write to service block
 	serviceBlock = ((Block*)v_service);
 

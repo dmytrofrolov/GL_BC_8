@@ -1,5 +1,5 @@
 LFLAGS = -lstdc++
-VERSION = 4
+VERSION = 1
 
 all: myheap
 

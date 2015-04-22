@@ -68,17 +68,17 @@ int initHeap( size_t size )
 	// counter
 	int i;
 
-	// gaussian 
+	// gaussian
 	for ( i = 0; i < powOf2; ++i)
 	{
-		// 
+		//
 		tempX = exp( - pow(  int(i - ((int) 1<< (int)( powOf2 / 5 ) ) ), 2 ) / ( 5.8f ) );
 		tempStart[i] = tempX;
 		sum += tempX;
 
 	}
-	
-	// make dest to 
+
+	// make dest to
 	for ( i = 0; i < powOf2; ++i)
 	{
 		tempStart[i] /= sum;
@@ -100,7 +100,7 @@ int initHeap( size_t size )
 		sum+=((int)1<<i) * tempStart[i];
 	}
 
-	
+
 
 	for ( i = 0; i <powOf2; ++i)
 	{
@@ -143,12 +143,12 @@ int initHeap( size_t size )
 	blockStart[0] = 0;
 
 	for( i = 0; i <powOf2 && tempStart[i]!=0; i++)
-	{	
-		if( i > 0 ) 
+	{
+		if( i > 0 )
 		{
 			blockStart[i] = blockStart[i-1]+tempStart[i-1] * ((int)1<<(i-1) );
 		}
-		
+
 		#ifdef DEBUG_INFO
 			cout << ((int)1<<i) << " == " << blockStart[i] << endl;
 		#endif
@@ -158,7 +158,7 @@ int initHeap( size_t size )
 		cout << "Total bytes to allocate : " << sum << endl;
 		cout << "Targest block to alloc  : " << largestSize << endl;
 	#endif
-	
+
 
 	///! allocation start
 
@@ -168,7 +168,13 @@ int initHeap( size_t size )
 	if( ph_start != NULL )
 	{
 		v_service = ph_start;
+
 		v_heap = (char*)ph_start + heapSize / SERVICE_PART + 1;
+
+        // write zeros to service-part
+        for(char*p = (char*)v_service; p < v_heap; ++p)
+            *p=0;
+
 
 		#ifdef DEBUG_INFO
 			cout << "v_service:\t" << v_service << endl;
@@ -176,7 +182,7 @@ int initHeap( size_t size )
 			cout << "g_heapSize:\t"<< heapSize << endl;
 		#endif
 
-		
+
 		g_heapSize = heapSize;
 		return SUCCESS;
 	}
@@ -198,27 +204,27 @@ int closeHeap( void )
 
 void * myMalloc( size_t size )
 {
-	
-	if( size > largestSize || size == 0 ) 
+
+	if( size > largestSize || size == 0 )
 	{
 		return NULL;
 	}
-	
+
 	short first = 1;
-	
+
 	int powOf2 = floor( log(size) / log(2) );
-	
+
 	if( (1 << powOf2) < size)
 	{
 		++powOf2;
 	}
-	
-	
+
+
 	/// ____ start malloc
 
 	// address in memory what was allocated
 	void * returnAddress;
-	
+
 	// current adress of the service block of memory
 	const char * curAdr = (const char *) v_service + (int)(blockStart[ powOf2 ] / 4);
 
@@ -267,7 +273,7 @@ void * myMalloc( size_t size )
 
 				// is free bit mask - check 0, 2st, 4th, 6th bit in order to currentBit
 				isFreeMask = ( 1 << currentBit );
-				
+
 				// if it is not free
 				if( *curAdr & isFreeMask )
 				{
@@ -289,7 +295,7 @@ void * myMalloc( size_t size )
 				}
 			}
 			while(--tempSize);
-			
+
 			if(currentBlock >= (char*)v_heap + size)
 			{
 				return NULL;
@@ -308,7 +314,7 @@ void * myMalloc( size_t size )
 				// mark all bits that needed to remember that block is used
 				do{
 					// mask to mark the block
-					isFreeMask = (3 << currentBit ); 
+					isFreeMask = (3 << currentBit );
 
 					// mark it
 					*(char*)currentBlock |= isFreeMask;
@@ -347,11 +353,11 @@ void * myMalloc( size_t size )
 
 				// it is also shifted in order to what bit we started to count in service part
 				returnAddress = (char*)returnAddress + startedBit / BITS_IN_SERV;
-				
+
 				return returnAddress;
-		
+
 			} // end if free block founded
-			
+
 		} // for each 2-bit in byte end
 
 	} // for each byte in service memory
@@ -365,7 +371,7 @@ void * myMalloc( size_t size )
 int myFree( void * address)
 {
 
-	if( address==NULL || ( ( address > ((char*)v_heap+g_heapSize) ) && ( address < v_heap ) ) ) 
+	if( address==NULL || ( ( address > ((char*)v_heap+g_heapSize) ) && ( address < v_heap ) ) )
 	{
 		return 1;
 	}
@@ -376,19 +382,19 @@ int myFree( void * address)
 
 	// is next byte also has to be deallocated
 	int next;
-	
+
 	const char * currentByte = (char*)v_service;
 
 	currentByte += startFrom / SERVICE_PART;
-	
+
 	unsigned int j = (startFrom % SERVICE_PART ) * BITS_IN_SERV;
-	
+
 	while( 1 )
 	{
 		for(; j < BITS_IN_BYTE; j += BITS_IN_SERV )
 		{
 			// mask to mark the block
-			isFreeMask = (1 << j) + (1 << (j+1)); 
+			isFreeMask = (1 << j) + (1 << (j+1));
 			// mask to mark that next block is used too
 
 			next = *(unsigned char*)currentByte & (1 << (j + 1) );
@@ -404,7 +410,7 @@ int myFree( void * address)
 		++currentByte;
 
 	}
-	
+
 	return 0;
 }
 
@@ -419,7 +425,7 @@ void printHeap( void )
 
 	while(*endOfHeap == 0 && endOfHeap > v_service )
 	{
-		++sizeToPrint; 
+		++sizeToPrint;
 		--endOfHeap;
 	}
 
@@ -441,11 +447,11 @@ void printHeap( void )
 		{
 
 			cout << hex << setw(2) << (int)*startOfTheService << " ";
-			
+
 			++startOfTheService;
-			
+
 			heapLeft-=4;
-			
+
 			--sizeToPrint;
 		}
 		cout << endl;
