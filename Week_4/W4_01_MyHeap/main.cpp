@@ -24,6 +24,8 @@ using std::endl;
 
 int main(){
 
+
+
 	int initResult;
 	initResult = initHeap( 2 * KB );
 	if( initResult != SUCCESS ){
