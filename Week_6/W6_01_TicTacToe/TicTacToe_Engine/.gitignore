@@ -1,0 +1,5 @@
+*.suo
+*.user
+*.filters
+*.txt
+/TicTacToe_Engine/Debug/*.*
