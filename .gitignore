@@ -26,6 +26,11 @@
 *.out
 *.app
 
+*.tlog
+*.log
+*.pdb
+
+
 /bin/
 
 /Week_5/W5_01_SendFileSocket/

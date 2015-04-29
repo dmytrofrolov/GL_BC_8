@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TicTacToe_Engine", "TicTacToe_Engine\TicTacToe_Engine.vcxproj", "{54C9FA4B-27F8-4D7D-B709-90083DF23B6C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GUI_Lib", "..\TTT_GUI\GUI_Lib\GUI_Lib.vcxproj", "{1EE27682-1172-4952-A508-25C60F2F47B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{54C9FA4B-27F8-4D7D-B709-90083DF23B6C}.Debug|Win32.Build.0 = Debug|Win32
 		{54C9FA4B-27F8-4D7D-B709-90083DF23B6C}.Release|Win32.ActiveCfg = Release|Win32
 		{54C9FA4B-27F8-4D7D-B709-90083DF23B6C}.Release|Win32.Build.0 = Release|Win32
+		{1EE27682-1172-4952-A508-25C60F2F47B2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1EE27682-1172-4952-A508-25C60F2F47B2}.Debug|Win32.Build.0 = Debug|Win32
+		{1EE27682-1172-4952-A508-25C60F2F47B2}.Release|Win32.ActiveCfg = Release|Win32
+		{1EE27682-1172-4952-A508-25C60F2F47B2}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
