@@ -1,3 +1,8 @@
+/**
+*
+*
+*
+*/
 #include <iostream>
 #include <Windows.h>
 #include <conio.h>
@@ -7,5 +12,6 @@ using std::endl;
 
 int startMenu(){
 	cout << "This is menu" << endl;
+
 	return 0;
 }
