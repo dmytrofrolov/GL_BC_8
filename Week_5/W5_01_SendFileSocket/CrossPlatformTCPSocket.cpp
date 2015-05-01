@@ -1,6 +1,5 @@
 #include "CrossPlatformTCPSocket.h"
 
-
 int CrossPlatformTCPSocket::initSocket(int port){
 	addr.sin_port = htons( port );
 
@@ -72,9 +71,15 @@ int CrossPlatformTCPSocket::closeCurrentConnection(int){
 }
 
 int CrossPlatformTCPSocket::connectToSocket(int size){
-	//addr.sin_port = htons( port );
-	inet_pton(AF_INET, "localhost", &addr.sin_addr);
-	bzero(&(addr.sin_zero), 8);
+	#ifdef _WIN32
+		addr.sin_addr.s_addr = inet_addr("localhost");
+	#endif
+	
+	#ifdef __linux__
+		inet_pton(AF_INET, "localhost", &addr.sin_addr);
+	#endif	
+	
+	memset(&(addr.sin_zero), 0, 8);
 
 	if (connect(io_socket, (struct sockaddr *)&addr, sockaddr_in_size ) < 0 )
 	{

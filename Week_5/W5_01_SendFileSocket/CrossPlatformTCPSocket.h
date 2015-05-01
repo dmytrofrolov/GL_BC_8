@@ -8,7 +8,7 @@
 #include <io.h>
 #include <winsock2.h>
 
-#pragma comment(lib,"ws2_32.lib")
+// #pragma comment(lib,"ws2_32.lib")
 
 #endif
 
@@ -36,24 +36,28 @@ class CrossPlatformTCPSocket {
 private:
 
 	struct sockaddr_in addr;
-	size_t sockaddr_in_size;
 	char buffer[ BUFFER_SIZE ];
 
 	#ifdef _WIN32
+		int sockaddr_in_size;
 		WSADATA wsa;
 		SOCKET io_socket, reply_socket;
 	#endif
 
 	#ifdef __linux__
+		size_t sockaddr_in_size;
 		int io_socket, reply_socket;
 	#endif
 
 public:
 	int initSocket(int port);
 	int bindSocket();
+
+
 	int acceptConnection(int);
 
 	int connectToSocket(int port);
+	
 	int closeCurrentConnection(int);
 
 	int listenForRequest(int);
