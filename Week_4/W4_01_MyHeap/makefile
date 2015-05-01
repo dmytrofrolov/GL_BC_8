@@ -1,4 +1,4 @@
-LFLAGS = -lstdc++
+LFLAGS = -lstdc++ -Wall -fexceptions -g -Iinclude
 VERSION = 1
 
 all: myheap
@@ -6,7 +6,7 @@ all: myheap
 .PHONY: myheap
 
 myheap: main.o memman_$(VERSION).o
-	gcc $(LFLAGS) main.o memman_$(VERSION).o -o myheap
+	g++ $(LFLAGS) main.o memman_$(VERSION).o -o myheap
 
 main.o: main.cpp
 	gcc $(LFLAGS) -c main.cpp
