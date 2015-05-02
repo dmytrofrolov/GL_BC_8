@@ -1,3 +1,5 @@
 make -f makefile SERVER=1
 
-./testserver
+rm *.o
+
+./testserver 8888
