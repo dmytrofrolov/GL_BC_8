@@ -127,11 +127,11 @@ int CrossPlatformTCPSocket::connectToSocket( const unsigned int port ){
 	addr_.sin_port = htons( port );
 
 	#ifdef _WIN32
-		addr_.sin_addr.s_addr = inet_addr("localhost");
+		addr_.sin_addr.s_addr = inet_addr("192.168.43.236");
 	#endif
 	
 	#ifdef __linux__
-		inet_pton(AF_INET, "localhost", &addr_.sin_addr);
+		inet_pton(AF_INET, "192.168.43.236", &addr_.sin_addr);
 	#endif	
 	
 	memset(&(addr_.sin_zero), 0, 8);

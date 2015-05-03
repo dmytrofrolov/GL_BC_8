@@ -18,3 +18,14 @@ main.o: main.cpp
 
 CrossPlatformTCPSocket.o: CrossPlatformTCPSocket.cpp
 	gcc $(LFLAGS) -c CrossPlatformTCPSocket.cpp
+
+MainMenu.o: MainMenu.cpp
+	gcc $(LFLAGS) -c MainMenu.cpp
+
+Server.o: Server.cpp
+	gcc $(LFLAGS) -c Server.cpp
+
+Client.o: Client.cpp
+	gcc $(LFLAGS) -c Client.cpp
+
+
