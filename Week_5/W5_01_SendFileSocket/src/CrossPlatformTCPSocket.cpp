@@ -10,12 +10,12 @@
 /////////////////////////////////////////////////////////////////////////////
 
 CrossPlatformTCPSocket::CrossPlatformTCPSocket():
-	bind_result_(-1),
-	listen_result_(-1),
-	close_result_(-1),
-	connect_result_(-1),
-	io_socket_(-1),
-	reply_socket_(-1)
+	bind_result_( ERROR_RESULT ),
+	listen_result_( ERROR_RESULT ),
+	close_result_( ERROR_RESULT ),
+	connect_result_( ERROR_RESULT ),
+	io_socket_( ERROR_RESULT ),
+	reply_socket_( ERROR_RESULT )
 {
 
 	addr_.sin_family = AF_INET;
@@ -28,6 +28,7 @@ CrossPlatformTCPSocket::CrossPlatformTCPSocket():
 
 int CrossPlatformTCPSocket::initSocket( void ) {
 
+	// if this CrossPlatformTCPSocket object was in use before
 	if ( io_socket_ > 0 ) { 
 		close ( io_socket_ );
 
@@ -37,19 +38,19 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 	}
 
 	#ifdef _WIN32	
-		printf("Initialising Winsock...\n");
+		printf("[SOCKET] Initialising Winsock...\n");
 		if ( WSAStartup(MAKEWORD(2, 2), &wsa_) != 0 ) {
 			printf("Failed. Error Code : %d", WSAGetLastError());
 			return 1;
 		}
 	#endif
 
-	printf("Create Socket...\n");
+	printf("[SOCKET] Create Socket...\n");
 
 	io_socket_ = socket( AF_INET , SOCK_STREAM , 0 );
 
 	if ( io_socket_ < 0 ) {
-		printf("Could not create socket\n");
+		printf("[SOCKET] Could not create socket\n");
 		#ifdef _WIN32
 			printf("with error code : %d\n", WSAGetLastError());
 		#endif
@@ -60,17 +61,42 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 
 /////////////////////////////////////////////////////////////////////////////
 
+int CrossPlatformTCPSocket::initSocket( const int socket ) {
+
+	#ifdef _WIN32	
+		printf("[SOCKET] Initialising Winsock...\n");
+		if ( WSAStartup(MAKEWORD(2, 2), &wsa_) != 0 ) {
+			printf("[SOCKET] Failed. Error Code : %d", WSAGetLastError());
+			return 1;
+		}
+	#endif
+
+	printf("[SOCKET] Create Socket...\n");
+
+	io_socket_ = socket;
+
+	if ( io_socket_ < 0 ) {
+		printf("[SOCKET] Could not create socket\n");
+		#ifdef _WIN32
+			printf("with error code : %d\n", WSAGetLastError());
+		#endif
+		return 2;
+	}
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
-	printf("Bind...\n");
+	printf("[SOCKET] Bind...\n");
 
 	addr_.sin_port = htons( port );
 
-	bind_result_ = bind( io_socket_, 
-						 (struct sockaddr *)&(addr_), 
-						 sockaddr_in_size_ );
+	bind_result_ = bind( io_socket_, (struct sockaddr *)&(addr_), sockaddr_in_size_ );
 
 	if ( bind_result_ < 0) {
-		printf("Bind failed\n");
+		printf("[SOCKET] Bind failed\n");
 		#ifdef _WIN32
 			printf("with error code : %d\n", WSAGetLastError());
 		#endif
@@ -84,12 +110,12 @@ int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 int CrossPlatformTCPSocket::listenSocket( void ){
 	
 	if( bind_result_ == BIND_SUCCESS ){
-		printf("Listen for request...\n");
+		printf("[SOCKET] Listen for request...\n");
 
 		listen_result_ = listen(io_socket_ , 3);
 	}
 	else{
-		printf("Socket was not binded, listening is impossible\n");
+		printf("[SOCKET] Socket was not binded, listening is impossible\n");
 	}
 	return listen_result_;
 }
@@ -113,8 +139,10 @@ int CrossPlatformTCPSocket::connectToSocket( const unsigned int port ){
 	connect_result_ = connect( io_socket_, (struct sockaddr *)&addr_, sockaddr_in_size_ );
 
 	if ( connect_result_ < 0 ){
-		printf("ERROR: Failed to connect to the host!\n");
-		return connect_result_;
+		printf("[SOCKET] ERROR: Failed to connect to the host!\n");
+		#ifdef _WIN32
+			printf("with error code : %d\n", WSAGetLastError());
+		#endif
 	}
 	else{
 		printf("[Client] Connected to server ...ok!\n");
@@ -125,7 +153,10 @@ int CrossPlatformTCPSocket::connectToSocket( const unsigned int port ){
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::sendToSocket( char * request ){
-	
+	if( request == NULL ){
+		return -1;
+	}
+
 	int sendSize = send( io_socket_ , request , strlen(request) , 0 );
 		
 	return sendSize;
@@ -133,10 +164,12 @@ int CrossPlatformTCPSocket::sendToSocket( char * request ){
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, unsigned int buffer_size ){
-	if( buffer_size > BUFFER_SIZE ) 
-		buffer_size = BUFFER_SIZE;
+int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, const size_t buffer_size ){
+	if( buffer == NULL || buffer_size == 0 ){
+		return -1;
+	}
 
+	memset(buffer, 0, buffer_size);
 	int receiveSize = recv( io_socket_, buffer, buffer_size, 0 );
 	buffer[ receiveSize ] = '\0';
 	return receiveSize;
@@ -146,12 +179,12 @@ int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, unsigned int
 
 int CrossPlatformTCPSocket::acceptReplyConnection( void ){
 	if( listen_result_ == LISTEN_SUCCESS && bind_result_ == BIND_SUCCESS ){
-		printf("Wait to accept connection...\n");
+		printf("[SOCKET] Wait to accept connection...\n");
 		
 		reply_socket_ = accept( io_socket_ , (struct sockaddr *)&addr_, &sockaddr_in_size_ );
 		
 		if ( reply_socket_ < 0 ){
-			printf("accept failed \n");
+			printf("[SOCKET] accept failed \n");
 			#ifdef _WIN32
 				printf("with error : %d\n", WSAGetLastError());
 			#endif
@@ -165,47 +198,19 @@ int CrossPlatformTCPSocket::acceptReplyConnection( void ){
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CrossPlatformTCPSocket::receiveReply( char * const buffer, unsigned int buffer_size ){
-	if( buffer_size > BUFFER_SIZE ) 
-		buffer_size = BUFFER_SIZE;
-
-	int receiveSize = recv( reply_socket_, buffer, buffer_size, 0 );
-
-	buffer[ receiveSize ] = '\0';
-	
-	return receiveSize;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-int CrossPlatformTCPSocket::sendReply( char * request ){
-	
-	int sendSize = send( reply_socket_ , request , strlen(request) , 0 );
-
-	return sendSize;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-int CrossPlatformTCPSocket::closeReplyConnection( void ){
-	if( reply_socket_ > 0 ){
+CrossPlatformTCPSocket::~CrossPlatformTCPSocket(){
+	if( io_socket_ > 0 ){
 		#ifdef _WIN32
-			close_result_ = closesocket( reply_socket_ );
+			close_result_ = closesocket( io_socket_ );
+			WSACleanup();
 		#endif
 		
 		#ifdef __linux__
-			close_result_ = close( reply_socket_ );
+			close_result_ = close( io_socket_ );
 		#endif	
 	}
-	return close_result_;
+
 }
 
-/////////////////////////////////////////////////////////////////////////////
 
-CrossPlatformTCPSocket::~CrossPlatformTCPSocket(){
-	close ( io_socket_ );
-
-	#ifdef _WIN32		
-		WSACleanup();
-	#endif
-}
+/// EOF CrossPlatformTCPSocket.cpp

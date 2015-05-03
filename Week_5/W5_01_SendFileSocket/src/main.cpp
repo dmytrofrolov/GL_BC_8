@@ -36,16 +36,28 @@ int main(){
 		server->initSocket();
 		server->bindSocket( port );
 		server->listenSocket();
+		int reply_socket_id;
+		CrossPlatformTCPSocket * reply_socket;
 		
 		while(1){
-			server->acceptReplyConnection();
-			server->receiveReply( buffer, 512 );
-			cout << buffer << endl;
-			server->sendReply((char*)" sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.12212431\n");
-			server->closeReplyConnection();
+			reply_socket_id = server->acceptReplyConnection();
+
+			reply_socket = new CrossPlatformTCPSocket();
+			
+			reply_socket->initSocket( reply_socket_id );
+			
+			cout << reply_socket->receiveFromSocket( buffer, 512 ) << endl;
+			
+			reply_socket->sendToSocket(buffer);
+			
+			delete reply_socket;
 		}
 		
 		delete server;
 	}
+
+
+	system("pause");
+	return 0;
 
 }

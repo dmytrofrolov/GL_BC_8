@@ -1,5 +1,5 @@
-make -f makefile
+make -f src/makefile
 
 rm *.o
 
-./SendFileSocket
+./bin/SendFileSocket

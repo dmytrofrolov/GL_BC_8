@@ -29,6 +29,7 @@
 #define BUFFER_SIZE 512
 #define BIND_SUCCESS 0
 #define LISTEN_SUCCESS 0
+#define ERROR_RESULT -1
  
 
 #ifndef _CROSSPLATFORMTCPSOCKET_H_
@@ -63,6 +64,12 @@ public:
 	int initSocket( void );
 
 
+	// Initialize socket with another socket e.g. with accept reply connection for server
+	// @param [const int] - valid socket id e.g. from acceptReplyConnection()
+	// @return  0 - if init successfull, error code otherwise
+	int initSocket( const int socket );
+
+
 	// Bind socket to port for listening, if not successfull
 	// @param   [const unsigned int]	port to bind
 	// @return 0 - if bind successfull, -1 if error
@@ -88,29 +95,15 @@ public:
 
 	// read from io_socket_
 	// @param [char * const] - pointer to buffer
-	// @param [const unsigned int] - size of buffer
+	// @param [unsigned int] - size of buffer
 	// @return size what received or -1 if error
-	int receiveFromSocket( char * const buffer, unsigned int buffer_size );
+	int receiveFromSocket( char * const buffer, const size_t buffer_size );
 
 
 	// accept input connection ( if is binded and listening ) to reply_socket_
 	// @return socket id if success or -1 if error
 	int acceptReplyConnection( void );
 
-	// read from reply_socket_
-	// @param [char * const] - pointer to buffer
-	// @param [const unsigned int] - size of buffer
-	// @return size what received or -1 if error
-	int receiveReply( char * const buffer, unsigned int buffer_size );
-
-	// write to reply_socket_
-	// @param [char*] - pointer to message to send
-	// @return - number of bytes sended, -1 if error
-	int sendReply( char * request );
-
-	// close reply_socket_
-	// @return 0 if success or -1 if error		
-	int closeReplyConnection( void );
 
 	// dtor
 	~CrossPlatformTCPSocket();

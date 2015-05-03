@@ -1,3 +1,9 @@
+cd src
+
 mingw32-make -f makefile WIN32=1
 
-SendFileSocket.exe
+del *.o
+
+cd ..
+
+bin\SendFileSocket.exe
