@@ -33,3 +33,9 @@
 
 /bin/
 
+*.lastbuildstate
+*.manifest
+*.lastbuildstate
+*.idb
+*.rc
+*.res
