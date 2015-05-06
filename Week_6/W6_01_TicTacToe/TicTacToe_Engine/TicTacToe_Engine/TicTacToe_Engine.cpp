@@ -17,10 +17,15 @@ bool DLLEXP isEmpty( unsigned int, unsigned int );
 bool DLLEXP makeMove(unsigned int row, unsigned int col, unsigned int player);
 unsigned int DLLEXP getItem(unsigned int row, unsigned int col);
 int DLLEXP isWon(unsigned int player);
+int DLLEXP aiMove(int ai_player);
 
 
 void initBoard(){
-	memset(g_game_area, 0, 9);
+
+	memset( g_game_area, 0 , 9 );
+	for(int i = 0; i<3; ++i)
+		for(int j =0; j < 3; ++j)
+			g_game_area[i][j]=0;
 }
 
 
@@ -115,12 +120,156 @@ int isWon(unsigned int player){
     return 0;
 }
 
-int f(){
-	initBoard();
-	g_game_area[1][2] = 1;
-	return g_game_area[1][2];
-}
 
+int aiMove( int ai_player ){
+	int col, row;
+	int * game_area = &g_game_area[0][0];
+	//g_game_area
+	col = 1;
+	row = 1;
+	int sum;
+	
+	// is winnable rows
+	sum = 0;
+	for(row = 0; row < 3; ++row){
+		for(col = 0; col < 3; ++col){
+			sum+= *(game_area + row * 3 + col);
+		}
+		if(sum == 10){
+			for(col = 0; col<3; ++col){
+				if(isEmpty(row,col)){
+					makeMove(row, col, ai_player);
+					return row * 3 + col;
+				}
+			}
+		}
+		sum = 0;
+	}
+
+	// is winnable cols
+	for(col = 0; col < 3; ++col){
+		for(row = 0; row < 3; ++row){
+			sum+= *(game_area + row * 3 + col);
+		}
+		if(sum == 10){
+			for(row = 0; row<3; ++row){
+				if(isEmpty(row,col)){
+					makeMove(row, col, ai_player);
+					return row * 3 + col;
+				}
+			}
+		}
+		sum = 0;
+	}
+
+	// is winnable diagonals
+	for(row = 0; row < 3; ++row){
+		sum+= *(game_area + row * 3 + row);
+	}
+	if(sum == 10){
+		for(row = 0; row<3; ++row){
+			if(isEmpty(row,row)){
+				makeMove(row, row, ai_player);
+				return row * 3 + row;
+			}
+		}
+	}
+	sum = 0;
+	for(row = 0; row < 3; ++row){
+		sum+= *(game_area + row * 3 + 2-row);
+	}
+	if(sum == 10){
+		for(row = 0; row<3; ++row){
+			if(isEmpty(row,2-row)){
+				makeMove(row, 2-row, ai_player);
+				return row * 3 + 2-row;
+			}
+		}
+	}
+	sum = 0;
+
+	/// if user winnable
+	
+	// is winnable rows
+	sum = 0;
+	for(row = 0; row < 3; ++row){
+		for(col = 0; col < 3; ++col){
+			sum+= *(game_area + row * 3 + col);
+		}
+		if(sum == 2){
+			for(col = 0; col<3; ++col){
+				if(isEmpty(row,col)){
+					makeMove(row, col, ai_player);
+					return row * 3 + col;
+				}
+			}
+		}
+		sum = 0;
+	}
+
+	// is winnable cols
+	for(col = 0; col < 3; ++col){
+		for(row = 0; row < 3; ++row){
+			sum+= *(game_area + row * 3 + col);
+		}
+		if(sum == 2){
+			for(row = 0; row<3; ++row){
+				if(isEmpty(row,col)){
+					makeMove(row, col, ai_player);
+					return row * 3 + col;
+				}
+			}
+		}
+		sum = 0;
+	}
+
+	// is winnable diagonals
+	for(row = 0; row < 3; ++row){
+		sum+= *(game_area + row * 3 + row);
+	}
+	if(sum == 2){
+		for(row = 0; row<3; ++row){
+			if(isEmpty(row,row)){
+				makeMove(row, row, ai_player);
+				return row * 3 + row;
+			}
+		}
+	}
+	sum = 0;
+
+	for(row = 0; row < 3; ++row){
+		sum+= *(game_area + row * 3 + 2-row);
+	}
+	if(sum == 2){
+		for(row = 0; row<3; ++row){
+			if(isEmpty(row,2-row)){
+				makeMove(row, 2-row, ai_player);
+				return row * 3 + 2-row;
+			}
+		}
+	}
+	sum = 0;
+
+	// if center free
+	if( isEmpty(1,1) ){
+		makeMove(1, 1, ai_player);
+
+		return 1 * 3 + 1;
+	}
+
+
+	// if not winnable or not center
+	for(int i = 0; i < 9; ++i){
+		if(isEmpty(i/3,i%3)){
+			makeMove(i/3, i%3, ai_player);
+			return i;
+		}
+	}
+
+
+
+	return 0;
+}
 
 
 }

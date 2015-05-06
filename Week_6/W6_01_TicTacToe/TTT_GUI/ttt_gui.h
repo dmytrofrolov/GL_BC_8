@@ -9,26 +9,30 @@ typedef bool  (*t_isEmpty)( unsigned int, unsigned int );
 typedef bool  (*t_makeMove)(unsigned int row, unsigned int col, unsigned int player);
 typedef unsigned int  (*t_getItem)(unsigned int row, unsigned int col);
 typedef int (*t_isWon)(unsigned int player);
+typedef int (*t_aiMove)(int ai_player);
 
 
 class TTT_Gui{
 private:
-	HINSTANCE hInstLibrary;
-	int cursor_pos_;
-public:
 	t_initBoard initBoard;
 	t_isEmpty isEmpty;
 	t_makeMove makeMove;
 	t_getItem getItem;
 	t_isWon isWon;
+	t_aiMove aiMove;
 
-	TTT_Gui();
+	HINSTANCE hInstLibrary;
+	int cursor_pos_;
+
 	int initDLL();
-	int startMenu();
 	void printBoard();
 	void drawCursor(unsigned int row, unsigned int col);
 	void drawPlayer(unsigned int row,unsigned int col, int player);
+	int startGame(int mode);
 
+public:
+	TTT_Gui();
+	int startMenu();
 	~TTT_Gui();
 
 };
