@@ -1,4 +1,7 @@
+//
 // TTT_Main.cpp : Defines the entry point for the console application.
+//	@date May, 2015
+//	@author Dmytro Frolov
 //
 
 #include "stdafx.h"

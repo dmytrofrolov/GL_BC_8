@@ -1,8 +1,10 @@
-// TicTacToe_Engine.cpp : Defines the exported functions for the DLL application.
 //
+// TicTacToe_Engine.cpp : Defines the exported functions for the DLL application.
+//	@date May 2015
+//	@author Dmytro Frolov
 
 #include "stdafx.h"
-
+#include <cstring>
 int g_game_area[3][3];
 const int BOARD_SIZE = 3;
 const int IN_ROW_TO_WIN = 3;
@@ -11,55 +13,60 @@ extern "C" {
 
 #define DLLEXP __declspec(dllexport)
 
-int DLLEXP f();
 void DLLEXP initBoard();
-bool DLLEXP isEmpty( unsigned int, unsigned int );
-bool DLLEXP makeMove(unsigned int row, unsigned int col, unsigned int player);
-unsigned int DLLEXP getItem(unsigned int row, unsigned int col);
-int DLLEXP isWon(unsigned int player);
-int DLLEXP aiMove(int ai_player);
+bool DLLEXP isEmpty( unsigned int row, unsigned int col );
+bool DLLEXP makeMove( unsigned int row, unsigned int col, unsigned int player );
+unsigned int DLLEXP getItem( unsigned int row, unsigned int col );
+int DLLEXP isWon( unsigned int player );
+int DLLEXP aiMove( int ai_player );
 
 
 void initBoard(){
 
-	memset( g_game_area, 0 , 9 );
-	for(int i = 0; i<3; ++i)
-		for(int j =0; j < 3; ++j)
-			g_game_area[i][j]=0;
+	memset( g_game_area , 0 , 9 * sizeof(int) );
+
+	//for( int i = 0; i < 3; ++i )
+	//	for( int j = 0; j < 3; ++j )
+	//		g_game_area[i][j] = 0;
 }
 
 
 bool isEmpty(unsigned int row,unsigned int col){
-    if(row < BOARD_SIZE && col < BOARD_SIZE && g_game_area[row][col])return false;
+    if(row < BOARD_SIZE && col < BOARD_SIZE && g_game_area[row][col])
+		return false;
     return true;
 }
 
 bool makeMove(unsigned int row, unsigned int col, unsigned int player){
-    if(row < BOARD_SIZE && col < BOARD_SIZE && isEmpty(row,col)){
-        g_game_area[row][col]=player;
+    if(row < BOARD_SIZE && col < BOARD_SIZE && isEmpty( row, col ) ) {
+        g_game_area[ row ][ col ] = player;
         return true;
     }
     return false;
 }
 
-unsigned int getItem(unsigned int row, unsigned int col){
-    if(col<BOARD_SIZE && row < BOARD_SIZE)return g_game_area[row][col];
+unsigned int getItem( unsigned int row, unsigned int col ){
+    if( col<BOARD_SIZE && row < BOARD_SIZE )
+		return g_game_area[ row ][ col ];
     return 0;
 }
 
-int isWon(unsigned int player){
+int isWon( unsigned int player ) {
     unsigned int wonInLine = 0;
 
     //checking rows
     //for each row
-    for(unsigned int row = 0; row < BOARD_SIZE; row++)
+    for( unsigned int row = 0; row < BOARD_SIZE; ++row)
         //for each place that is less than should be to win
-        for(unsigned int i = 0; i <= BOARD_SIZE-IN_ROW_TO_WIN; i++){
+        for( unsigned int i = 0; i <= BOARD_SIZE-IN_ROW_TO_WIN; ++i ) {
             //check if all what should marked to win is marked
-            for(unsigned int j = i; j < i+IN_ROW_TO_WIN; j++){
-                if(g_game_area[row][j]==player)wonInLine++;
-                else wonInLine=0;
-                if(wonInLine>=IN_ROW_TO_WIN)return player;
+            for( unsigned int j = i; j < i+IN_ROW_TO_WIN; ++j ) {
+                if(g_game_area[row][j]==player)
+					++wonInLine;
+                else 
+					wonInLine = 0;
+                if( wonInLine >= IN_ROW_TO_WIN )
+					return player;
             }
             wonInLine = 0;
         }
@@ -255,6 +262,51 @@ int aiMove( int ai_player ){
 		makeMove(1, 1, ai_player);
 
 		return 1 * 3 + 1;
+	}
+
+	
+	if( *(game_area + 3)  && ( *(game_area+7) || *(game_area+8) ) ){
+		if(isEmpty(2,0)){
+			makeMove(2, 0, ai_player);
+			return 2*3+0;
+		}
+	}
+
+	if( ( *(game_area + 8) + *game_area) == 2 || ( *(game_area + 2) + *(game_area+6) ) == 2 ){
+		if(isEmpty(0,1)){
+			makeMove(0, 1, ai_player);
+			return 0*3+1;
+		}
+		if(isEmpty(1,0)){
+			makeMove(1, 0, ai_player);
+			return 1*3+0;
+		}
+		if(isEmpty(1,2)){
+			makeMove(1, 2, ai_player);
+			return 1*3+2;
+		}
+		if(isEmpty(2,1)){
+			makeMove(2, 1, ai_player);
+			return 2*3+1;
+		}
+
+
+
+	}
+
+	if(isEmpty(0,2)){
+		makeMove(0, 2, ai_player);
+		return 2;
+	}
+
+	if(isEmpty(2,0)){
+		makeMove(2, 0, ai_player);
+		return 2*3;
+	}
+
+	if(isEmpty(2,2)){
+		makeMove(2, 2, ai_player);
+		return 2*3 + 2;
 	}
 
 
