@@ -39,7 +39,7 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 
 	#ifdef _WIN32	
 		printf("[SOCKET] Initialising Winsock...\n");
-		if ( WSAStartup(MAKEWORD(2, 2), &wsa_) != 0 ) {
+		if ( WSAStartup( WSA_VERSION, &wsa_ ) != 0 ) {
 			printf("Failed. Error Code : %d", WSAGetLastError());
 			return 1;
 		}
@@ -47,7 +47,7 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 
 	printf("[SOCKET] Create Socket...\n");
 
-	io_socket_ = socket( AF_INET , SOCK_STREAM , 0 );
+	io_socket_ = socket( AF_INET, SOCK_STREAM, 0 );
 
 	if ( io_socket_ < 0 ) {
 		printf("[SOCKET] Could not create socket\n");
@@ -65,7 +65,7 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 
 	#ifdef _WIN32	
 		printf("[SOCKET] Initialising Winsock...\n");
-		if ( WSAStartup(MAKEWORD(2, 2), &wsa_) != 0 ) {
+		if ( WSAStartup( WSA_VERSION, &wsa_ ) != 0 ) {
 			printf("[SOCKET] Failed. Error Code : %d", WSAGetLastError());
 			return 1;
 		}
@@ -80,7 +80,7 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 		#ifdef _WIN32
 			printf("with error code : %d\n", WSAGetLastError());
 		#endif
-		return 2;
+		return INVALID_SOCKET_ERROR;
 	}
 
 	return 0;
@@ -96,9 +96,9 @@ int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 	bind_result_ = bind( io_socket_, (struct sockaddr *)&(addr_), sockaddr_in_size_ );
 
 	if ( bind_result_ < 0) {
-		printf("[SOCKET] Bind failed\n");
+		printf( "[SOCKET] Bind failed\n" );
 		#ifdef _WIN32
-			printf("with error code : %d\n", WSAGetLastError());
+			printf( "with error code : %d\n", WSAGetLastError() );
 		#endif
 	}
 
@@ -107,12 +107,12 @@ int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CrossPlatformTCPSocket::listenSocket( void ){
+int CrossPlatformTCPSocket::listenSocket( const unsigned int max_clients_queue ){
 	
 	if( bind_result_ == BIND_SUCCESS ){
 		printf("[SOCKET] Listen for request...\n");
 
-		listen_result_ = listen(io_socket_ , 3);
+		listen_result_ = listen( io_socket_, max_clients_queue );
 	}
 	else{
 		printf("[SOCKET] Socket was not binded, listening is impossible\n");
@@ -122,16 +122,16 @@ int CrossPlatformTCPSocket::listenSocket( void ){
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CrossPlatformTCPSocket::connectToSocket( const unsigned int port ){
+int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int port ){
 
 	addr_.sin_port = htons( port );
 
 	#ifdef _WIN32
-		addr_.sin_addr.s_addr = inet_addr("192.168.43.236");
+		addr_.sin_addr.s_addr = inet_addr( host );
 	#endif
 	
 	#ifdef __linux__
-		inet_pton(AF_INET, "192.168.43.236", &addr_.sin_addr);
+		inet_pton(AF_INET, host, &addr_.sin_addr);
 	#endif	
 	
 	memset(&(addr_.sin_zero), 0, 8);

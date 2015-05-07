@@ -22,7 +22,7 @@ int main(){
 		CrossPlatformTCPSocket * client = new CrossPlatformTCPSocket();
 		
 		client->initSocket();
-		client->connectToSocket( port );
+		client->connectToSocket( (char*)"localhost", port );
 		client->sendToSocket((char*)"123432");
 		client->receiveFromSocket( buffer, 512 );
 		printf("%s\n", buffer ); 		
@@ -35,7 +35,7 @@ int main(){
 		
 		server->initSocket();
 		server->bindSocket( port );
-		server->listenSocket();
+		server->listenSocket( 10 );
 		int reply_socket_id;
 		CrossPlatformTCPSocket * reply_socket;
 		

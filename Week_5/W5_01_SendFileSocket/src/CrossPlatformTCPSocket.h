@@ -30,6 +30,8 @@
 #define BIND_SUCCESS 0
 #define LISTEN_SUCCESS 0
 #define ERROR_RESULT -1
+#define INVALID_SOCKET_ERROR 2
+#define WSA_VERSION MAKEWORD(2, 2)
  
 
 #ifndef _CROSSPLATFORMTCPSOCKET_H_
@@ -77,14 +79,16 @@ public:
 
 
 	// mark socket as passive listener in port binded before
+	// @param   [const unsigned int]	max number of clients in queue for connect
 	// @return 0 if success or -1 if this error 
-	int listenSocket( void );
+	int listenSocket( const unsigned int max_clients_queue );
 
 
 	// initiate a connection on a socket at port
 	// @param   [const unsigned int]	port to connect
+	// @param   [char*]	host to connect
 	// @return 0 if success or -1 if error
-	int connectToSocket( const unsigned int port );
+	int connectToSocket( char * host, const unsigned int port );
 
 
 	// write to reply_socket_
