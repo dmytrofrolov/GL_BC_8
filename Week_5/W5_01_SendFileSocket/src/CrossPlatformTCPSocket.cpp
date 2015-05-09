@@ -63,6 +63,18 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 
 int CrossPlatformTCPSocket::initSocket( const int socket ) {
 
+	if( socket < 0 )
+		return INVALID_SOCKET_ERROR;
+
+	// if this CrossPlatformTCPSocket object was in use before
+	if ( io_socket_ > 0 ) { 
+		close ( io_socket_ );
+
+		#ifdef _WIN32		
+			WSACleanup();
+		#endif
+	}
+
 	#ifdef _WIN32	
 		printf("[SOCKET] Initialising Winsock...\n");
 		if ( WSAStartup( WSA_VERSION, &wsa_ ) != 0 ) {
@@ -89,6 +101,10 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
+
+	if( io_socket_ < 0 )
+		return ERROR_RESULT; 
+
 	printf("[SOCKET] Bind...\n");
 
 	addr_.sin_port = htons( port );
@@ -109,7 +125,7 @@ int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 
 int CrossPlatformTCPSocket::listenSocket( const unsigned int max_clients_queue ){
 	
-	if( bind_result_ == BIND_SUCCESS ){
+	if( bind_result_ == BIND_SUCCESS && io_socket_ > 0 ){
 		printf("[SOCKET] Listen for request...\n");
 
 		listen_result_ = listen( io_socket_, max_clients_queue );
@@ -123,6 +139,9 @@ int CrossPlatformTCPSocket::listenSocket( const unsigned int max_clients_queue )
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int port ){
+
+	if( host == NULL || io_socket_ < 0 )
+		return connect_result_;
 
 	addr_.sin_port = htons( port );
 
@@ -153,11 +172,11 @@ int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int por
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::sendToSocket( char * request ){
-	if( request == NULL ){
-		return -1;
+	if( request == NULL || io_socket_ < 0 ){
+		return ERROR_RESULT;
 	}
 
-	int sendSize = send( io_socket_ , request , strlen(request) , 0 );
+	int sendSize = send( io_socket_, request, strlen(request), 0 );
 		
 	return sendSize;
 }
@@ -165,11 +184,11 @@ int CrossPlatformTCPSocket::sendToSocket( char * request ){
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, const size_t buffer_size ){
-	if( buffer == NULL || buffer_size == 0 ){
-		return -1;
+	if( buffer == NULL || buffer_size == 0 || io_socket_ < 0 ){
+		return ERROR_RESULT;
 	}
 
-	memset(buffer, 0, buffer_size);
+	memset( buffer, 0, buffer_size );
 	int receiveSize = recv( io_socket_, buffer, buffer_size, 0 );
 	buffer[ receiveSize ] = '\0';
 	return receiveSize;
@@ -178,7 +197,8 @@ int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, const size_t
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::acceptReplyConnection( void ){
-	if( listen_result_ == LISTEN_SUCCESS && bind_result_ == BIND_SUCCESS ){
+
+	if( listen_result_ == LISTEN_SUCCESS && bind_result_ == BIND_SUCCESS && io_socket_ > 0 ){
 		printf("[SOCKET] Wait to accept connection...\n");
 		
 		reply_socket_ = accept( io_socket_ , (struct sockaddr *)&addr_, &sockaddr_in_size_ );
@@ -192,7 +212,7 @@ int CrossPlatformTCPSocket::acceptReplyConnection( void ){
 		return reply_socket_;
 
 	}else{
-		return -1;
+		return ERROR_RESULT;
 	}	
 }
 
