@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FILE_NAME_SIZE 30
+#define FILE_NAME_SIZE 130
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -107,7 +107,7 @@ int Server::startServer( void ){
 	char file_name[ FILE_NAME_SIZE ];
 	// char path_to_file[ BUFFER_SIZE ] = "/home/admin/files/";
 
-	char path_to_file[ BUFFER_SIZE ] = "../";
+	char path_to_file[ BUFFER_SIZE ] = "..\\";
 
 	while( init_result == SUCCESS_RESULT ){
 		
@@ -119,7 +119,7 @@ int Server::startServer( void ){
 		reply_socket_id = socket_->acceptReplyConnection();
 
 		if( reply_socket_id < 0 ){
-			continue;
+			break;
 		}
 
 		reply_socket = new CrossPlatformTCPSocket();
@@ -134,11 +134,16 @@ int Server::startServer( void ){
 			return INIT_ERROR;
 		}
 
-		bytes_received = reply_socket->receiveFromSocket( file_name, FILE_NAME_SIZE );
-		memset(strchr( file_name, '\n' ), 0, 1 );
-		printf( "Received : %d bytes, file_name : %s\n", bytes_received, file_name );
+		bytes_received =  reply_socket->receiveFromSocket( file_name, FILE_NAME_SIZE );
+		
+		printf("%d\n", bytes_received );
 
-		FILE * pFile;
+		void * file_end_line = strchr( file_name, '\n' );
+		if( file_end_line != NULL )
+			memset( file_end_line, 0, 1 );
+		printf( "Received : %d bytes, file_name : %s\n", bytes_received, file_name );
+		
+		FILE * pFile = NULL;
 		strcat( path_to_file, file_name );
 		pFile = fopen ( path_to_file, "r");
 		if ( pFile == NULL ){
@@ -159,6 +164,7 @@ int Server::startServer( void ){
 			}
 			fclose (pFile);
 		}
+		
 		bytes_replied = reply_socket->sendToSocket( "\n\r\n\r" );
 
 

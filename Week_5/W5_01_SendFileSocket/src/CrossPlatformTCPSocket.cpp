@@ -67,12 +67,15 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 		return INVALID_SOCKET_ERROR;
 
 	// if this CrossPlatformTCPSocket object was in use before
-	if ( io_socket_ > 0 ) { 
-		close ( io_socket_ );
-
-		#ifdef _WIN32		
+	if ( (int)io_socket_ > 0 ) { 
+		#ifdef _WIN32
+			close_result_ = closesocket( io_socket_ );
 			WSACleanup();
 		#endif
+		
+		#ifdef __linux__
+			close_result_ = close( io_socket_ );
+		#endif	
 	}
 
 	#ifdef _WIN32	
@@ -153,7 +156,7 @@ int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int por
 		inet_pton(AF_INET, host, &addr_.sin_addr);
 	#endif	
 	
-	memset(&(addr_.sin_zero), 0, sizeof( addr_.sin_zero ) ); // 8
+	memset(&(addr_.sin_zero), 0, 8 ); // 8
 
 	connect_result_ = connect( io_socket_, (struct sockaddr *)&addr_, sockaddr_in_size_ );
 
@@ -190,7 +193,8 @@ int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, const size_t
 
 	memset( buffer, 0, buffer_size );
 	int receiveSize = recv( io_socket_, buffer, buffer_size, 0 );
-	buffer[ receiveSize ] = '\0';
+	if( receiveSize > 0 )
+		buffer[ receiveSize ] = '\0';
 	return receiveSize;
 }
 

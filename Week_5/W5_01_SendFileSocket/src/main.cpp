@@ -22,13 +22,18 @@ int main(){
 
 	if(ch == '2')
 	{
+		cout << "File name : " << endl;
+		cin >> buffer;
 		CrossPlatformTCPSocket * client = new CrossPlatformTCPSocket();
 		
 		client->initSocket();
-		client->connectToSocket( (char*)"localhost", port );
-		client->sendToSocket((char*)"123432");
-		client->receiveFromSocket( buffer, 512 );
-		printf("%s\n", buffer ); 		
+
+		client->connectToSocket( (char*)"127.0.0.1", port );
+
+		client->sendToSocket( buffer );
+
+		while( client->receiveFromSocket( buffer, 512 ) > 0)
+			printf("%s", buffer ); 		
 		
 		delete client;
 	}
@@ -37,7 +42,7 @@ int main(){
 		Server * server = new Server();
 
 		server->initServer( port, 10 );
-		
+
 		server->startServer();
 
 		server->stopServer();
