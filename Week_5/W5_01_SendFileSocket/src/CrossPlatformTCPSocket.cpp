@@ -39,9 +39,9 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 
 	#ifdef _WIN32	
 		printf("[SOCKET] Initialising Winsock...\n");
-		if ( WSAStartup( WSA_VERSION, &wsa_ ) != 0 ) {
+		if ( WSAStartup( WSA_VERSION, &wsa_ ) != SUCCESS_RESULT ) {
 			printf("Failed. Error Code : %d", WSAGetLastError());
-			return 1;
+			return SOCKET_INIT_ERROR;
 		}
 	#endif
 
@@ -56,7 +56,7 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 		#endif
 	}
 
-	return 0;
+	return SUCCESS_RESULT;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -77,9 +77,9 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 
 	#ifdef _WIN32	
 		printf("[SOCKET] Initialising Winsock...\n");
-		if ( WSAStartup( WSA_VERSION, &wsa_ ) != 0 ) {
+		if ( WSAStartup( WSA_VERSION, &wsa_ ) != SUCCESS_RESULT ) {
 			printf("[SOCKET] Failed. Error Code : %d", WSAGetLastError());
-			return 1;
+			return SOCKET_INIT_ERROR;
 		}
 	#endif
 
@@ -95,7 +95,7 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 		return INVALID_SOCKET_ERROR;
 	}
 
-	return 0;
+	return SUCCESS_RESULT;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -153,7 +153,7 @@ int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int por
 		inet_pton(AF_INET, host, &addr_.sin_addr);
 	#endif	
 	
-	memset(&(addr_.sin_zero), 0, 8);
+	memset(&(addr_.sin_zero), 0, sizeof( addr_.sin_zero ) ); // 8
 
 	connect_result_ = connect( io_socket_, (struct sockaddr *)&addr_, sockaddr_in_size_ );
 

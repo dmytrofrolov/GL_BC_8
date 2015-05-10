@@ -1,4 +1,5 @@
 #include "CrossPlatformTCPSocket.h"
+#include "Server.h"
 #include <cstdio>
 #include <iostream>
 
@@ -7,6 +8,8 @@ using std::cin;
 using std::endl;
 
 int main(){
+
+
 	char ch;
 	cout << "Server - 1, Client - 2 : "<< endl;
 	cin >> ch;
@@ -31,27 +34,13 @@ int main(){
 	}
 	else
 	{
-		CrossPlatformTCPSocket * server = new CrossPlatformTCPSocket();
-		
-		server->initSocket();
-		server->bindSocket( port );
-		server->listenSocket( 10 );
-		int reply_socket_id;
-		CrossPlatformTCPSocket * reply_socket;
-		
-		while(1){
-			reply_socket_id = server->acceptReplyConnection();
+		Server * server = new Server();
 
-			reply_socket = new CrossPlatformTCPSocket();
-			
-			reply_socket->initSocket( reply_socket_id );
-			
-			cout << reply_socket->receiveFromSocket( buffer, 512 ) << endl;
-			
-			reply_socket->sendToSocket(buffer);
-			
-			delete reply_socket;
-		}
+		server->initServer( port, 10 );
+		
+		server->startServer();
+
+		server->stopServer();
 		
 		delete server;
 	}
