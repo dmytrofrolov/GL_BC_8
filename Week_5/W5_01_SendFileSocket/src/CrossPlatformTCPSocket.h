@@ -119,6 +119,9 @@ public:
 	// @return socket id if success or -1 if error
 	int acceptReplyConnection( void );
 
+	// close io_socket_
+	// @return 0 if success or error code if error
+	int closeSocket( void );
 
 	// dtor
 	~CrossPlatformTCPSocket();

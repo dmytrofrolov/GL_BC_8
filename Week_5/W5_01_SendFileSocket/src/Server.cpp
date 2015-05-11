@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FILE_NAME_SIZE 130
+#define FILE_NAME_SIZE 30
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -81,7 +81,7 @@ int Server::initServer( const unsigned int port, const unsigned int max_clients_
 		return LISTEN_ERROR;
 	}
 
-	server_status_ = SERVER_STARTED;
+	server_status_ = SERVER_INITED;
 	
 	return SUCCESS_RESULT;
 
@@ -90,7 +90,7 @@ int Server::initServer( const unsigned int port, const unsigned int max_clients_
 /////////////////////////////////////////////////////////////////////////////
 
 int Server::startServer( void ){
-	if( server_status_ != SERVER_STARTED ){
+	if( server_status_ != SERVER_INITED ){
 		return START_ERROR;
 	}
 	
@@ -102,11 +102,9 @@ int Server::startServer( void ){
 	int bytes_replied = 0;
 	
 	char buffer[ BUFFER_SIZE ];
-	memset( buffer, 0, BUFFER_SIZE );
 
 	char file_name[ FILE_NAME_SIZE ];
-	// char path_to_file[ BUFFER_SIZE ] = "/home/admin/files/";
-
+	
 	char path_to_file[ BUFFER_SIZE ] = "..\\";
 
 	while( init_result == SUCCESS_RESULT ){
@@ -135,8 +133,6 @@ int Server::startServer( void ){
 		}
 
 		bytes_received =  reply_socket->receiveFromSocket( file_name, FILE_NAME_SIZE );
-		
-		printf("%d\n", bytes_received );
 
 		void * file_end_line = strchr( file_name, '\n' );
 		if( file_end_line != NULL )
@@ -150,7 +146,7 @@ int Server::startServer( void ){
 			printf("%s\n", path_to_file);
 			strcpy( buffer, "404 File not found\nPath: " );
 			strcat( buffer, path_to_file );
-			bytes_replied = reply_socket->sendToSocket( buffer );
+			bytes_replied += reply_socket->sendToSocket( buffer );
 		}
 		else{
 
@@ -158,20 +154,16 @@ int Server::startServer( void ){
 				if ( fgets (buffer, BUFFER_SIZE, pFile) == NULL ) 
 					break;
 
-				bytes_replied = reply_socket->sendToSocket( buffer );
+				bytes_replied += reply_socket->sendToSocket( buffer );
 
 				memset( buffer, 0, BUFFER_SIZE );
 			}
 			fclose (pFile);
 		}
 		
-		bytes_replied = reply_socket->sendToSocket( "\n\r\n\r" );
-
-
-		//if( bytes_received > 0 ){
-			
-		//}
-			
+		bytes_replied += reply_socket->sendToSocket( (char*)"\n\r\n\r" );	
+		printf("Bytes replied : %d\n", bytes_replied );
+		bytes_replied = 0;	
 		delete reply_socket;
 		reply_socket = NULL;
 	}

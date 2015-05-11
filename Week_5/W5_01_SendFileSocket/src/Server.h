@@ -16,6 +16,7 @@ class CrossPlatformTCPSocket;
 
 enum SERVER_STATUS {
 	SERVER_STARTED = 0,
+	SERVER_INITED = 0,
 	SERVER_STOPPED
 };
 
