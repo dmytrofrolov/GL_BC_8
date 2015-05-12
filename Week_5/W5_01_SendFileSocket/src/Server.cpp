@@ -42,8 +42,8 @@ int Server::initServer( const unsigned int port, const unsigned int max_clients_
 
 	// if port is from OS range
 	if( port < MIN_PORT ){
-		server_status_ = INVALID_PORT;
-		return INVALID_PORT;
+		server_status_ = INVALID_PORT_ERROR;
+		return INVALID_PORT_ERROR;
 	}
 
 	// if user want to server create zero client queue
@@ -144,11 +144,12 @@ int Server::startServer( void ){
 		pFile = fopen ( path_to_file, "r");
 		if ( pFile == NULL ){
 			printf("%s\n", path_to_file);
-			strcpy( buffer, "404 File not found\nPath: " );
-			strcat( buffer, path_to_file );
+			strcpy( buffer, "404" );
 			bytes_replied += reply_socket->sendToSocket( buffer );
 		}
 		else{
+			strcpy( buffer, "200" );
+			bytes_replied += reply_socket->sendToSocket( buffer );
 
 			while ( !feof (pFile) ){
 				if ( fgets (buffer, BUFFER_SIZE, pFile) == NULL ) 

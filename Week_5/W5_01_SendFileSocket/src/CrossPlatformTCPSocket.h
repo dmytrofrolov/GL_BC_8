@@ -33,6 +33,7 @@
 #define INVALID_SOCKET_ERROR -2
 #define SOCKET_INIT_ERROR 1
 #define WSA_VERSION MAKEWORD(2, 2)
+#define MIN_PORT 1024
 
 enum SOCKET_ERRORS {
 	SUCCESS_RESULT = 0,
@@ -40,9 +41,13 @@ enum SOCKET_ERRORS {
 	INIT_ERROR,
 	LISTEN_ERROR,
 	BIND_ERROR,
+	CONNECT_ERROR,
 	START_ERROR,
 	STOP_ERROR,
-	INVALID_PORT
+	INVALID_PORT_ERROR,
+	INVALID_HOST_ERROR,
+	GET_FILE_ERROR,
+	SEND_FILE_ERROR
 };
 
 #ifndef _CROSSPLATFORMTCPSOCKET_H_
@@ -103,9 +108,9 @@ public:
 
 
 	// write to reply_socket_
-	// @param [char*] - pointer to message to send
+	// @param [const char*] - pointer to message to send
 	// @return - number of bytes sended, -1 if error
-	int sendToSocket( char * request );
+	int sendToSocket( const char * request );
 
 
 	// read from io_socket_

@@ -8,7 +8,6 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-#define MIN_PORT 1024
 #define ZERO_CLIENTS 0
 
 class CrossPlatformTCPSocket;

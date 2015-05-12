@@ -51,6 +51,16 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 		#endif
 	}
 
+	// set timeout for socket
+	
+	struct timeval tv;
+
+	tv.tv_sec = 30;  /* 30 Secs Timeout */
+	tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+
+	setsockopt(io_socket_, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
+
 	return SUCCESS_RESULT;
 }
 
@@ -161,7 +171,7 @@ int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int por
 
 /////////////////////////////////////////////////////////////////////////////
 
-int CrossPlatformTCPSocket::sendToSocket( char * request ){
+int CrossPlatformTCPSocket::sendToSocket( const char * request ){
 	if( request == NULL || (int)io_socket_ < 0 ){
 		return ERROR_RESULT;
 	}
