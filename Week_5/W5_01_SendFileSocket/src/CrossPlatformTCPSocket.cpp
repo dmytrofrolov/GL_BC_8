@@ -15,10 +15,27 @@ CrossPlatformTCPSocket::CrossPlatformTCPSocket():
 	listen_result_( ERROR_RESULT ),
 	close_result_( ERROR_RESULT ),
 	connect_result_( ERROR_RESULT ),
+	#ifdef _WIN32
+		wsa_start_result_( ERROR_RESULT ), 
+	#endif
 	io_socket_( ERROR_RESULT ),
 	reply_socket_( ERROR_RESULT )
 {
+	// if there is not objects created
+	if( socket_number == 0 ){
+		#ifdef _WIN32	
+			printf("[SOCKET] Initialising Winsock...\n");
+
+			wsa_start_result_ = WSAStartup( WSA_VERSION, &wsa_ );
+
+			if ( wsa_start_result_ != SUCCESS_RESULT ) {
+				printf("Failed. Error Code : %d", WSAGetLastError());
+			}
+		#endif
+	}
+
 	++socket_number;
+
 
 	addr_.sin_family = AF_INET;
 	addr_.sin_addr.s_addr = INADDR_ANY;
@@ -35,9 +52,7 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 		closeSocket();
 
 	#ifdef _WIN32	
-		printf("[SOCKET] Initialising Winsock...\n");
-		if ( WSAStartup( WSA_VERSION, &wsa_ ) != SUCCESS_RESULT ) {
-			printf("Failed. Error Code : %d", WSAGetLastError());
+		if ( wsa_start_result_ != SUCCESS_RESULT ) {
 			return SOCKET_INIT_ERROR;
 		}
 	#endif
@@ -78,9 +93,7 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 		closeSocket();
 
 	#ifdef _WIN32	
-		printf("[SOCKET] Initialising Winsock...\n");
-		if ( WSAStartup( WSA_VERSION, &wsa_ ) != SUCCESS_RESULT ) {
-			printf("[SOCKET] Failed. Error Code : %d", WSAGetLastError());
+		if ( wsa_start_result_ != SUCCESS_RESULT ) {
 			return SOCKET_INIT_ERROR;
 		}
 	#endif

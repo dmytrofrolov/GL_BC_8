@@ -14,6 +14,7 @@
 #define SERVER 1
 
 int main( int argc, char* argv[] ){
+
 	char * host;
 	int port;
 	int ch;

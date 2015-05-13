@@ -64,6 +64,7 @@ private:
 
 	#ifdef _WIN32
 		int sockaddr_in_size_;
+		int wsa_start_result_;
 		WSADATA wsa_;
 		SOCKET io_socket_, reply_socket_;
 	#endif
