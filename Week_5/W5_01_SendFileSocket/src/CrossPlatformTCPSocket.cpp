@@ -6,6 +6,7 @@
 
 #include "CrossPlatformTCPSocket.h"
 
+unsigned int CrossPlatformTCPSocket::socket_number = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -17,6 +18,7 @@ CrossPlatformTCPSocket::CrossPlatformTCPSocket():
 	io_socket_( ERROR_RESULT ),
 	reply_socket_( ERROR_RESULT )
 {
+	++socket_number;
 
 	addr_.sin_family = AF_INET;
 	addr_.sin_addr.s_addr = INADDR_ANY;
@@ -55,7 +57,7 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 	
 	struct timeval tv;
 
-	tv.tv_sec = 30;  /* 30 Secs Timeout */
+	tv.tv_sec = SERVER_TIMEOUT;  /* 30 Secs Timeout */
 	tv.tv_usec = 0;  // Not init'ing this can cause strange errors
 
 	setsockopt(io_socket_, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
@@ -103,7 +105,12 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 
 	if( (int)io_socket_ < 0 )
-		return ERROR_RESULT; 
+		return ERROR_RESULT;
+
+	if( bind_result_ != ERROR_RESULT ) {
+		printf("[SOCKET] Already binded\n");
+		return bind_result_;
+	}
 
 	printf("[SOCKET] Bind...\n");
 
@@ -125,6 +132,11 @@ int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 
 int CrossPlatformTCPSocket::listenSocket( const unsigned int max_clients_queue ){
 	
+	if( listen_result_ == LISTEN_SUCCESS ){
+		printf("[SOCKET] Already listening\n");
+		return listen_result_;
+	}
+
 	if( bind_result_ == BIND_SUCCESS && (int)io_socket_ > 0 ){
 		printf("[SOCKET] Listen for request...\n");
 
@@ -221,10 +233,14 @@ int CrossPlatformTCPSocket::acceptReplyConnection( void ){
 /////////////////////////////////////////////////////////////////////////////
 
 int CrossPlatformTCPSocket::closeSocket( void ){
+
 	if( (int)io_socket_ > 0 ){
+
 		#ifdef _WIN32
 			close_result_ = closesocket( io_socket_ );
-			WSACleanup();
+			if( socket_number == 0 ){	// if there are no Socket object left
+				WSACleanup();
+			}
 		#endif
 		
 		#ifdef __linux__
@@ -239,6 +255,7 @@ int CrossPlatformTCPSocket::closeSocket( void ){
 /////////////////////////////////////////////////////////////////////////////
 
 CrossPlatformTCPSocket::~CrossPlatformTCPSocket(){
+	--socket_number;
 	closeSocket();
 }
 

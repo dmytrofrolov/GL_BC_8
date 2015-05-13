@@ -1,3 +1,10 @@
+#
+# Copyright 2015. Dmytro Frolov.  All Rights Reserved.
+# 
+# Makefile for SendFile project.
+#
+
+
 LFLAGS = -lstdc++ -Wall -fexceptions -g -Iinclude
 
 ifdef WIN32

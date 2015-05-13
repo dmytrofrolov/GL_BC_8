@@ -9,6 +9,7 @@
 #define _SERVER_H_
 
 #define ZERO_CLIENTS 0
+#define FILE_NAME_SIZE 30
 
 class CrossPlatformTCPSocket;
 

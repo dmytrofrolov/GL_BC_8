@@ -34,6 +34,7 @@
 #define SOCKET_INIT_ERROR 1
 #define WSA_VERSION MAKEWORD(2, 2)
 #define MIN_PORT 1024
+#define SERVER_TIMEOUT 30
 
 enum SOCKET_ERRORS {
 	SUCCESS_RESULT = 0,
@@ -73,6 +74,9 @@ private:
 	#endif
 
 public:
+
+	// number of used sockets
+	static unsigned int socket_number;
 
 	// ctor with vars initialization
 	CrossPlatformTCPSocket();
