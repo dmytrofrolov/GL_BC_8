@@ -108,11 +108,6 @@ int Server::startServer( void ){
 
 	while( init_result == SUCCESS_RESULT ){
 		
-		memset( buffer, 0, BUFFER_SIZE );
-		memset( path_to_file, 0, BUFFER_SIZE );
-		memset( file_name, 0, FILE_NAME_SIZE );
-
-
 		reply_socket_id = socket_->acceptReplyConnection();
 
 		if( reply_socket_id < 0 ){
@@ -134,21 +129,18 @@ int Server::startServer( void ){
 		bytes_received =  reply_socket->receiveFromSocket( file_name, FILE_NAME_SIZE );
 
 		void * file_end_line = strchr( file_name, '\n' );
+		
 		if( file_end_line != NULL )
 			memset( file_end_line, 0, 1 );
-		printf( "Received : %d bytes, file_name : %s\n", bytes_received, file_name );
+
+		printf( "Received : %d bytes, path_to_file : %s\n", bytes_received, path_to_file );
 		
-		FILE * pFile = NULL;
-		strcat( path_to_file, file_name );
-		pFile = fopen ( path_to_file, "r");
-		if ( pFile == NULL ){
-			printf("%s\n", path_to_file);
-			strcpy( buffer, "404" );
-			bytes_replied += reply_socket->sendToSocket( buffer );
-		}
-		else{
-			strcpy( buffer, "200" );
-			bytes_replied += reply_socket->sendToSocket( buffer );
+		// int open_result;
+		// File file;
+		// open_result = file.openFile( path_to_file, "r" );
+		// if( open_result == SUCCESS_RESULT ) {
+
+			bytes_replied += reply_socket->sendToSocket( "200" );
 
 			while ( !feof (pFile) ){
 				if ( fgets (buffer, BUFFER_SIZE, pFile) == NULL ) 
@@ -158,7 +150,12 @@ int Server::startServer( void ){
 
 				memset( buffer, 0, BUFFER_SIZE );
 			}
-			fclose (pFile);
+			// file.closeFile();
+		}
+		else{
+
+			bytes_replied += reply_socket->sendToSocket( "404" );
+
 		}
 		
 		bytes_replied += reply_socket->sendToSocket( (char*)"\n\r\n\r" );	
