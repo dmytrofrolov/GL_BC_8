@@ -14,8 +14,8 @@
 #define NOT_FOUND_ERROR 2
 
 enum ReturnCodes{
-	SUCCESS = 200,
-	NOT_FOUND = 404
+	SUCCESS_CODE = 200,
+	NOT_FOUND_CODE = 404
 };
 
 class CrossPlatformTCPSocket;
@@ -47,7 +47,7 @@ public:
 	// Print file on screen or error message if file not found
 	// @param 	[const char *] name of file to get
 	// @return  0 - if success or error code
-	int getFile( const char * file_name );
+	int getFile( char * file_name );
 
 	// Deallocates all memory from port_ and socket_
 	~Client();

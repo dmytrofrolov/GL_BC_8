@@ -6,6 +6,7 @@
 
 
 #include "Server.h"
+#include "File.h"
 #include "CrossPlatformTCPSocket.h"
 #include <stdio.h>
 #include <string.h>
@@ -104,13 +105,14 @@ int Server::startServer( void ){
 
 	char file_name[ FILE_NAME_SIZE ];
 	
-	char path_to_file[ BUFFER_SIZE ] = "..\\";
+
 
 	while( init_result == SUCCESS_RESULT ){
 		
 		reply_socket_id = socket_->acceptReplyConnection();
 
 		if( reply_socket_id < 0 ){
+			printf("reply_socket_id %d\n",reply_socket_id );
 			break;
 		}
 
@@ -128,40 +130,36 @@ int Server::startServer( void ){
 
 		bytes_received =  reply_socket->receiveFromSocket( file_name, FILE_NAME_SIZE );
 
-		void * file_end_line = strchr( file_name, '\n' );
+		printf( "[SERVER] Received : %d bytes\n", bytes_received );
 		
-		if( file_end_line != NULL )
-			memset( file_end_line, 0, 1 );
-
-		printf( "Received : %d bytes, path_to_file : %s\n", bytes_received, path_to_file );
+		int open_result, read_result;
+		File file;
+		open_result = file.openFile( file_name, READ_PARAM );
 		
-		// int open_result;
-		// File file;
-		// open_result = file.openFile( path_to_file, "r" );
-		// if( open_result == SUCCESS_RESULT ) {
+		if( open_result == SUCCESS_RESULT ) {
 
-			bytes_replied += reply_socket->sendToSocket( "200" );
+			bytes_replied += reply_socket->sendToSocket( FILE_FOUND );
 
-			while ( !feof (pFile) ){
-				if ( fgets (buffer, BUFFER_SIZE, pFile) == NULL ) 
-					break;
+			do{
+				read_result = file.readFile( buffer, BUFFER_SIZE );
+				
+				if( read_result == SUCCESS_RESULT )
+					bytes_replied += reply_socket->sendToSocket( buffer );
+			
+			}while( read_result == SUCCESS_RESULT );
 
-				bytes_replied += reply_socket->sendToSocket( buffer );
-
-				memset( buffer, 0, BUFFER_SIZE );
-			}
-			// file.closeFile();
+			file.closeFile();
 		}
 		else{
-
-			bytes_replied += reply_socket->sendToSocket( "404" );
-
+			bytes_replied += reply_socket->sendToSocket( FILE_NOT_FOUND );
 		}
 		
-		bytes_replied += reply_socket->sendToSocket( (char*)"\n\r\n\r" );	
-		printf("Bytes replied : %d\n", bytes_replied );
+		printf("[SERVER] Bytes replied : %d\n\n", bytes_replied );
+		
 		bytes_replied = 0;	
+		
 		delete reply_socket;
+		
 		reply_socket = NULL;
 	}
 

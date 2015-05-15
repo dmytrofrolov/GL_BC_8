@@ -10,6 +10,8 @@
 
 #define ZERO_CLIENTS 0
 #define FILE_NAME_SIZE 30
+#define FILE_FOUND "200"
+#define FILE_NOT_FOUND "404"
 
 class CrossPlatformTCPSocket;
 
@@ -33,6 +35,7 @@ private:
 	CrossPlatformTCPSocket * socket_;
 
 public:
+	// Constructor - initialize all class members
 	Server();
 
 	// Initialize socket, bind it with port number and mark it to listen for connections

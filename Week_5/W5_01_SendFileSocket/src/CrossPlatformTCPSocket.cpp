@@ -7,7 +7,9 @@
 #include "CrossPlatformTCPSocket.h"
 
 unsigned int CrossPlatformTCPSocket::socket_number = 0;
-
+#ifdef _WIN32
+	int CrossPlatformTCPSocket::wsa_start_result_ = ERROR_RESULT;
+#endif
 /////////////////////////////////////////////////////////////////////////////
 
 CrossPlatformTCPSocket::CrossPlatformTCPSocket():
@@ -15,9 +17,6 @@ CrossPlatformTCPSocket::CrossPlatformTCPSocket():
 	listen_result_( ERROR_RESULT ),
 	close_result_( ERROR_RESULT ),
 	connect_result_( ERROR_RESULT ),
-	#ifdef _WIN32
-		wsa_start_result_( ERROR_RESULT ), 
-	#endif
 	io_socket_( ERROR_RESULT ),
 	reply_socket_( ERROR_RESULT )
 {
@@ -68,16 +67,6 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 		#endif
 	}
 
-	// set timeout for socket
-	
-	struct timeval tv;
-
-	tv.tv_sec = SERVER_TIMEOUT;  /* 30 Secs Timeout */
-	tv.tv_usec = 0;  // Not init'ing this can cause strange errors
-
-	setsockopt(io_socket_, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
-
-
 	return SUCCESS_RESULT;
 }
 
@@ -94,6 +83,7 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 
 	#ifdef _WIN32	
 		if ( wsa_start_result_ != SUCCESS_RESULT ) {
+						printf("%d\n", wsa_start_result_);
 			return SOCKET_INIT_ERROR;
 		}
 	#endif
@@ -189,7 +179,7 @@ int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int por
 		#endif
 	}
 	else{
-		printf("[Client] Connected to server ...ok!\n");
+		printf("[SOCKET] Connected to server ...ok!\n");
 	}
 	return connect_result_;
 }
@@ -214,6 +204,15 @@ int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, const size_t
 		return ERROR_RESULT;
 	}
 
+	// set timeout for socket
+	
+	struct timeval tv;
+
+	tv.tv_sec = RECEIVE_TIMEOUT;  /* 30 Secs Timeout */
+	tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+
+	setsockopt(io_socket_, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
 	memset( buffer, 0, buffer_size );
 	int receiveSize = recv( io_socket_, buffer, buffer_size, 0 );
 	if( receiveSize > 0 )
@@ -227,7 +226,16 @@ int CrossPlatformTCPSocket::acceptReplyConnection( void ){
 
 	if( listen_result_ == LISTEN_SUCCESS && bind_result_ == BIND_SUCCESS && (int)io_socket_ > 0 ){
 		printf("[SOCKET] Wait to accept connection...\n");
-		
+
+		// turn off timeout for socket because it can listen for a long time
+		struct timeval tv;
+
+		tv.tv_sec = 0;  /* 0 Secs Timeout */
+		tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+
+		setsockopt(io_socket_, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
+
 		reply_socket_ = accept( io_socket_ , (struct sockaddr *)&addr_, &sockaddr_in_size_ );
 		
 		if ( reply_socket_ < 0 ){

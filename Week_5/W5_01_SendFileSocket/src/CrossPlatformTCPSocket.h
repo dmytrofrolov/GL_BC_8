@@ -34,7 +34,7 @@
 #define SOCKET_INIT_ERROR 1
 #define WSA_VERSION MAKEWORD(2, 2)
 #define MIN_PORT 1024
-#define SERVER_TIMEOUT 30
+#define RECEIVE_TIMEOUT 30
 
 enum SOCKET_ERRORS {
 	SUCCESS_RESULT = 0,
@@ -64,7 +64,7 @@ private:
 
 	#ifdef _WIN32
 		int sockaddr_in_size_;
-		int wsa_start_result_;
+		static int wsa_start_result_;
 		WSADATA wsa_;
 		SOCKET io_socket_, reply_socket_;
 	#endif
