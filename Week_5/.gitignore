@@ -1,5 +1,5 @@
 client.bat
-client.cpp
+/client.cpp
 server_file_send.cpp
 
 *.html
