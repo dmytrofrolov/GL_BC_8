@@ -17,8 +17,8 @@ all: SendFileSocket
 
 .PHONY: SendFileSocket
 
-SendFileSocket: main.o CrossPlatformTCPSocket.o Server.o Client.o File.o
-	g++ $(LFLAGS) main.o CrossPlatformTCPSocket.o Server.o Client.o File.o $(WIN_FLAGS) -o ../bin/SendFileSocket
+SendFileSocket: main.o CrossPlatformTCPSocket.o Server.o Client.o File.o MainMenu.o
+	g++ $(LFLAGS) main.o CrossPlatformTCPSocket.o Server.o Client.o File.o MainMenu.o $(WIN_FLAGS) -o ../bin/SendFileSocket
 
 main.o: main.cpp
 	gcc $(LFLAGS) -c main.cpp

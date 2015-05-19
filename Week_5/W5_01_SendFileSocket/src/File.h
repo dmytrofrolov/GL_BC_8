@@ -52,6 +52,9 @@ public:
 	// @return - 0 if success or error code
 	int closeFile( void );
 
+	// destructor closes the file if it was not closed before
+	~File();
+
 };
 
 #endif // _FILE_H_ 

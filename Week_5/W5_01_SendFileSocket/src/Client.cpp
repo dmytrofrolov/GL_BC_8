@@ -132,7 +132,10 @@ int Client::getFile( char * file_name ){
 				bytes_received = socket_->receiveFromSocket( buffer, BUFFER_SIZE );
 				
 				if( bytes_received > 0 ){
-					file.writeFile( buffer, bytes_received );
+					write_result = file.writeFile( buffer, bytes_received );
+					if( write_result != SUCCESS_RESULT ){
+						printf("[CLIENT] Write to file error\n" );
+					}
 				}else{
 					break;
 				}

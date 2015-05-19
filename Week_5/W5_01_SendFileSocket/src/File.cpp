@@ -27,6 +27,11 @@ int File::openFile( char * file_name, const char * param ){
 		return OPEN_ERROR;
 	}
 
+	// if file was opened but was not closed before
+	if( file_ != NULL ){
+		closeFile();
+	}
+
 	// if end-line symbol is somewhere in file_name, change it to '\0'
 	void * file_end_line = strchr( file_name, '\n' );
 	if( file_end_line != NULL ){
@@ -84,5 +89,12 @@ int File::closeFile(){
 }
 
 ////////////////////////////////////////////////////////////////////////////
+
+File::~File(){
+	closeFile();
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 
 /// EOF File.cpp

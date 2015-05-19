@@ -8,22 +8,74 @@
 #define _MAIN_MENU_H_
 
 class MainMenu{
+
+enum MenuChoices{
+	SERVER = '1',
+	CLIENT,
+	OPTIONS,
+	EXIT
+};
+
+enum OptionsChoices{
+	CHANGE_HOST = '1',
+	CHANGE_PORT,
+	BACK_TO_MAIN
+};
+
+enum Errors{
+	CLIENT_ERROR = 1,
+	SERVER_ERROR
+};
+
 private:
 	char * host_;
-	char * port_;
+	unsigned int port_;
+
+	// Print menu to console
+	// @return void
+	void printMain( void );
+
+	// Print options to console and make changes ( port or host )
+	// @return void
+	void showOptions( void );
+
+	// Clear console window
+	// @return void
+	void clearScreen( void );
+
+	// Flush all symbols from stdin
+	// @return void
+	void flushInput( void );
+
+	// get new host from stdin
+	// @return void
+	void changeHost( void );
+
+	// get new port from stdin
+	// @return void
+	void changePort( void );
+
+	//  Start server
+	//  @return 0 if success or error code
+	int startServer( void );
+
+	// Start client
+	// @return 0 if success or error code
+	int startClient( void );
+
+
 public:
 
 	//  Constructor for fields inits
-	MainMenu();
+	MainMenu( char * host, unsigned int port );
 
 	//  show menu to the screen and choose client or server
-	void startMenu();
+	//  return void
+	void startMenu( void );
 
-	//  start server
-	void startServer();
+	// Destructor frees memory
+	~MainMenu();
 
-	// start port
-	void startClient();
 };
 
 
