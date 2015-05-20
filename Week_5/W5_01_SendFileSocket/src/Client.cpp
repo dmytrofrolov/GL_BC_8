@@ -86,8 +86,9 @@ int Client::initClient( const char * host, const unsigned int port ){
 
 int Client::getFile( char * file_name ){
 	// if it was not connected right
-	if( connect_result_ != SUCCESS_RESULT )
+	if( connect_result_ != SUCCESS_RESULT ){
 		return CONNECT_ERROR;
+	}
 
 	// if filename invalid
 	if( file_name == NULL ){

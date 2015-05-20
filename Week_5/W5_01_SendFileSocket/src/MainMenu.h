@@ -39,10 +39,6 @@ private:
 	// @return void
 	void showOptions( void );
 
-	// Clear console window
-	// @return void
-	void clearScreen( void );
-
 	// Flush all symbols from stdin
 	// @return void
 	void flushInput( void );
@@ -63,6 +59,9 @@ private:
 	// @return 0 if success or error code
 	int startClient( void );
 
+	// Clear console window
+	// @return void
+	static void clearScreen( void );
 
 public:
 

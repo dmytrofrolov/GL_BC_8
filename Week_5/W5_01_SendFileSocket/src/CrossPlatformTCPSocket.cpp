@@ -47,8 +47,9 @@ CrossPlatformTCPSocket::CrossPlatformTCPSocket():
 int CrossPlatformTCPSocket::initSocket( void ) {
 
 	// if this CrossPlatformTCPSocket object was in use before
-	if( (int)io_socket_ > 0 )
+	if( (int)io_socket_ > 0 ){
 		closeSocket();
+	}
 
 	#ifdef _WIN32	
 		if ( wsa_start_result_ != SUCCESS_RESULT ) {
@@ -74,16 +75,18 @@ int CrossPlatformTCPSocket::initSocket( void ) {
 
 int CrossPlatformTCPSocket::initSocket( const int socket ) {
 
-	if( socket < 0 )
+	if( socket < 0 ){
 		return INVALID_SOCKET_ERROR;
+	}
 
 	// if this CrossPlatformTCPSocket object was in use before
-	if( (int)io_socket_ > 0 )
+	if( (int)io_socket_ > 0 ){
 		closeSocket();
+	}
 
 	#ifdef _WIN32	
 		if ( wsa_start_result_ != SUCCESS_RESULT ) {
-						printf("%d\n", wsa_start_result_);
+			printf("%d\n", wsa_start_result_ );
 			return SOCKET_INIT_ERROR;
 		}
 	#endif
@@ -107,8 +110,9 @@ int CrossPlatformTCPSocket::initSocket( const int socket ) {
 
 int CrossPlatformTCPSocket::bindSocket( const unsigned int port ) {
 
-	if( (int)io_socket_ < 0 )
+	if( (int)io_socket_ < 0 ){
 		return ERROR_RESULT;
+	}
 
 	if( bind_result_ != ERROR_RESULT ) {
 		printf("[SOCKET] Already binded\n");
@@ -155,8 +159,9 @@ int CrossPlatformTCPSocket::listenSocket( const unsigned int max_clients_queue )
 
 int CrossPlatformTCPSocket::connectToSocket( char * host, const unsigned int port ){
 
-	if( host == NULL || (int)io_socket_ < 0 )
+	if( host == NULL || (int)io_socket_ < 0 ){
 		return connect_result_;
+	}
 
 	addr_.sin_port = htons( port );
 
@@ -215,8 +220,9 @@ int CrossPlatformTCPSocket::receiveFromSocket( char * const buffer, const size_t
 
 	memset( buffer, 0, buffer_size );
 	int receiveSize = recv( io_socket_, buffer, buffer_size, 0 );
-	if( receiveSize > 0 )
+	if( receiveSize > 0 ){
 		buffer[ receiveSize ] = '\0';
+	}
 	return receiveSize;
 }
 

@@ -59,7 +59,6 @@ class CrossPlatformTCPSocket {
 private:
 
 	struct sockaddr_in addr_;
-	char buffer_[ BUFFER_SIZE ];
 	int bind_result_, listen_result_, close_result_, connect_result_;
 
 	#ifdef _WIN32

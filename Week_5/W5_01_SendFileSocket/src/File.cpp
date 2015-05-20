@@ -40,8 +40,9 @@ int File::openFile( char * file_name, const char * param ){
 
 	file_ = fopen ( file_name, param );
 
-	if( file_ == NULL )
+	if( file_ == NULL ){
 		return OPEN_ERROR;
+	}
 
 	return SUCCESS_RESULT;
 }
@@ -49,16 +50,19 @@ int File::openFile( char * file_name, const char * param ){
 ////////////////////////////////////////////////////////////////////////////
 
 int File::readFile( char * const buffer, const size_t size ){
-	if( buffer == NULL || size == 0 || file_ == NULL )
+	if( buffer == NULL || size == 0 || file_ == NULL ){
 		return READ_ERROR;
+	}
 
-	if( feof ( file_ ) )
+	if( feof ( file_ ) ){
 		return EOF_ERROR;
+	}
 
 	char * read_result = fgets ( buffer, size, file_ );
 
-	if( read_result == NULL )
+	if( read_result == NULL ){
 		return READ_ERROR;
+	}
 
 	return SUCCESS_RESULT;
 }
@@ -66,13 +70,15 @@ int File::readFile( char * const buffer, const size_t size ){
 ////////////////////////////////////////////////////////////////////////////
 
 int File::writeFile( char * const buffer, const size_t size ){
-	if( buffer == NULL || size == 0 || file_ == NULL )
+	if( buffer == NULL || size == 0 || file_ == NULL ){
 		return READ_ERROR;
+	}
 
 	size_t write_result = fwrite ( buffer, sizeof(char), size, file_ );
 
-	if( write_result != size )
+	if( write_result != size ){
 		return WRITE_ERROR;
+	}
 	
 	return SUCCESS_RESULT;
 }

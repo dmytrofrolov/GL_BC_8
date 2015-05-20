@@ -71,7 +71,7 @@ void MainMenu::showOptions(){
 	// repeat until user choose go back to main
 	while( option_input != BACK_TO_MAIN ) {
 		clearScreen();
-		printf("HOST : %s\tPORT : %d\n", host_, port_ );
+		printf("HOST : %s\tPORT : %u\n", host_, port_ );
 		printf("Options\n1 - Change host\n2 - Change port\n3 - Back to main...\n");
 		
 		scanf_result = scanf("\n%c", &option_input );
@@ -121,7 +121,7 @@ void MainMenu::changeHost(){
 	
 	int scanf_result;
 	
-	scanf_result = scanf("\n%30s", host);
+	scanf_result = scanf("\n%29s", host);
 	
 	if( scanf_result != SCANF_ERROR ){
 		delete [] host_;
@@ -135,9 +135,10 @@ void MainMenu::changeHost(){
 void MainMenu::changePort(){
 	printf("Enter new PORT : \n");
 	
-	int port, scanf_result;
+	unsigned int port;
+	int scanf_result;
 	
-	scanf_result = scanf("\n%d", &port);
+	scanf_result = scanf("\n%6u", &port);
 	
 	if( scanf_result != SCANF_ERROR ){
 		port_ = port;
@@ -187,7 +188,7 @@ int MainMenu::startClient(){
 	
 	printf("File name : \n");
 	
-	scanf("%s", file_name );
+	scanf("%29s", file_name );
 	
 	Client * client = new Client();
 	

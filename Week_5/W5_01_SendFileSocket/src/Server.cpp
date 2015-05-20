@@ -182,9 +182,7 @@ int Server::stopServer( void ){
 
 Server::~Server(){
 	if( socket_ != NULL ){
-
 		stop_result_ = stopServer();
-
 	}
 }
 
