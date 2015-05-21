@@ -168,7 +168,7 @@ int MainMenu::startServer(){
 
 	delete server;
 
-	printf("Press any key to continue...\n");
+	printf("Press Enter to continue...\n");
 	flushInput();
 	getchar();
 

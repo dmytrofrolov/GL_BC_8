@@ -110,7 +110,7 @@ int Server::startServer( void ){
 	while( init_result == SUCCESS_RESULT ){
 		
 		reply_socket_id = socket_->acceptReplyConnection();
-
+		
 		if( reply_socket_id < 0 ){
 			printf("reply_socket_id %d\n",reply_socket_id );
 			break;
@@ -129,13 +129,13 @@ int Server::startServer( void ){
 		}
 
 		bytes_received =  reply_socket->receiveFromSocket( file_name, FILE_NAME_SIZE );
-
+		
 		printf( "[SERVER] Received : %d bytes\n", bytes_received );
 		
 		int open_result, read_result;
 		File file;
 		open_result = file.openFile( file_name, READ_PARAM );
-		
+
 		if( open_result == SUCCESS_RESULT ) {
 
 			bytes_replied += reply_socket->sendToSocket( FILE_FOUND );
@@ -161,6 +161,7 @@ int Server::startServer( void ){
 		delete reply_socket;
 		
 		reply_socket = NULL;
+		
 	}
 
 	return SUCCESS_RESULT;

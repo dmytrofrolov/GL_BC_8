@@ -88,6 +88,7 @@ int File::writeFile( char * const buffer, const size_t size ){
 int File::closeFile(){
 	if( file_ != NULL ){
 		fclose( file_ );
+		file_ = NULL;
 		return SUCCESS_RESULT;
 	}
 

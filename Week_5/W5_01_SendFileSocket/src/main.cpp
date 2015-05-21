@@ -20,9 +20,10 @@ int main( int argc, char* argv[] ){
 		port = atoi( argv[2] );
 	}
 	else {
-		printf("Using:\n SendFile <type> <host> <port>\n");
-		printf("<type> : 1 for server, 2 for client\n");
-		return INVALID_INPUT;
+		printf("Using:\n SendFile <host> <port>\n");
+		printf("Marked as default:\nHOST - localhost\nPORT - 1234\n");
+		host = (char*)"localhost";
+		port = 1234;
 	}
 
 	MainMenu menu( host, port );
