@@ -58,8 +58,6 @@ TTT_Gui::TTT_Gui(){
 
 int TTT_Gui::startMenu(){
 	// if dll is not loaded
-	if(!hInstLibrary_)
-		return 2;
 
 	int mode = SINGLE_PLAYER; // 0 - single player, 1 - multiplayer
 
@@ -82,7 +80,7 @@ int TTT_Gui::startMenu(){
 
 	cout << endl;
 
-	cout << " What mode do you want to choose : \n Single player - press 1\n Multiplayer - press 2 \n (or ESC to exit) \n:";
+	//cout << " What mode do you want to choose : \n Single player - press 1\n Multiplayer - press 2 \n (or ESC to exit) \n:";
 
 	// char for input
 	char input_ch = 0;
@@ -116,7 +114,7 @@ int TTT_Gui::startMenu(){
 
 /////////////////////////////////////////////////////////////////////////////////
 
-int TTT_Gui::startGame(int mode){
+int TTT_Gui::startGame( int mode ){
 	char input_ch = 0;	
 	int current_player;
 	int current_won;
